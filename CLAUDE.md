@@ -1,210 +1,169 @@
-# Claude Code Rules
+# Hackathon Todo Application — Claude Code Instructions
 
-This file is generated during init for the selected agent.
+## Project Overview
+This repository is a **spec-driven, full-stack monorepo** developed using **Claude Code** and **Spec-Kit Plus**.
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+The project evolves in phases:
+- Phase I: CLI In-Memory Todo Application
+- Phase II: Full-Stack Web Application (Next.js + FastAPI + Neon + Better Auth)
+- Phase III: AI-Powered Todo Chatbot (OpenAI Agents + MCP)
 
-## Task context
+Claude Code must strictly follow specifications defined in `/specs` and must never implement functionality without an approved spec.
 
-**Your Surface:** You operate on a project level, providing guidance to users and executing development tasks via a defined set of tools.
+---
 
-**Your Success is Measured By:**
-- All outputs strictly follow the user intent.
-- Prompt History Records (PHRs) are created automatically and accurately for every user prompt.
-- Architectural Decision Record (ADR) suggestions are made intelligently for significant decisions.
-- All changes are small, testable, and reference code precisely.
+## Core Development Rules (NON-NEGOTIABLE)
 
-## Core Guarantees (Product Promise)
+1. **Spec-First Development**
+   - No code may be written without a governing spec.
+   - If a requirement is unclear or missing, request a spec update instead of guessing.
 
-- Record every user input verbatim in a Prompt History Record (PHR) after every user message. Do not truncate; preserve full multiline input.
-- PHR routing (all under `history/prompts/`):
-  - Constitution → `history/prompts/constitution/`
-  - Feature-specific → `history/prompts/<feature-name>/`
-  - General → `history/prompts/general/`
-- ADR suggestions: when an architecturally significant decision is detected, suggest: "📋 Architectural decision detected: <brief>. Document? Run `/sp.adr <title>`." Never auto‑create ADRs; require user consent.
+2. **Incremental Specs, Incremental Implementation**
+   - Specs are created and implemented one by one.
+   - Claude must only implement the currently referenced spec.
+   - Do not preemptively implement future phase features.
 
-## Development Guidelines
+3. **Explicit Spec Referencing**
+   - Always reference specs using:
+     - `@specs/overview.md`
+     - `@specs/database/schema.md`
+     - `@specs/features/*.md`
+     - `@specs/api/*.md`
+     - `@specs/ui/*.md`
 
-### 1. Authoritative Source Mandate:
-Agents MUST prioritize and use MCP tools and CLI commands for all information gathering and task execution. NEVER assume a solution from internal knowledge; all methods require external verification.
+4. **Skill-Guided Implementation**
+   - Certain implementations must follow predefined reusable skills.
+   - When a spec aligns with a skill, Claude must apply that skill’s patterns and constraints.
 
-### 2. Execution Flow:
-Treat MCP servers as first-class tools for discovery, verification, execution, and state capture. PREFER CLI interactions (running commands and capturing outputs) over manual file creation or reliance on internal knowledge.
+---
 
-### 3. Knowledge capture (PHR) for Every User Input.
-After completing requests, you **MUST** create a PHR (Prompt History Record).
+## Repository Structure (Monorepo)
 
-**When to create PHRs:**
-- Implementation work (code changes, new features)
-- Planning/architecture discussions
-- Debugging sessions
-- Spec/task/plan creation
-- Multi-step workflows
+/
+├── .spec-kit/
+│ └── config.yaml
+├── specs/
+│ ├── overview.md
+│ ├── database/
+│ ├── features/
+│ ├── api/
+│ └── ui/
+├── frontend/ # Next.js App Router
+│ └── CLAUDE.md
+├── backend/ # FastAPI + SQLModel
+│ └── CLAUDE.md
+├── constitution.md
+├── CLAUDE.md # (this file)
+└── README.md
 
-**PHR Creation Process:**
+yaml
+Copy code
 
-1) Detect stage
-   - One of: constitution | spec | plan | tasks | red | green | refactor | explainer | misc | general
+---
 
-2) Generate title
-   - 3–7 words; create a slug for the filename.
+## Technology Stack Context
 
-2a) Resolve route (all under history/prompts/)
-  - `constitution` → `history/prompts/constitution/`
-  - Feature stages (spec, plan, tasks, red, green, refactor, explainer, misc) → `history/prompts/<feature-name>/` (requires feature context)
-  - `general` → `history/prompts/general/`
+### Frontend
+- Next.js 16+ (App Router)
+- TypeScript
+- Tailwind CSS
+- Better Auth (JWT issuance)
+- No Next.js API routes (UI only)
 
-3) Prefer agent‑native flow (no shell)
-   - Read the PHR template from one of:
-     - `.specify/templates/phr-template.prompt.md`
-     - `templates/phr-template.prompt.md`
-   - Allocate an ID (increment; on collision, increment again).
-   - Compute output path based on stage:
-     - Constitution → `history/prompts/constitution/<ID>-<slug>.constitution.prompt.md`
-     - Feature → `history/prompts/<feature-name>/<ID>-<slug>.<stage>.prompt.md`
-     - General → `history/prompts/general/<ID>-<slug>.general.prompt.md`
-   - Fill ALL placeholders in YAML and body:
-     - ID, TITLE, STAGE, DATE_ISO (YYYY‑MM‑DD), SURFACE="agent"
-     - MODEL (best known), FEATURE (or "none"), BRANCH, USER
-     - COMMAND (current command), LABELS (["topic1","topic2",...])
-     - LINKS: SPEC/TICKET/ADR/PR (URLs or "null")
-     - FILES_YAML: list created/modified files (one per line, " - ")
-     - TESTS_YAML: list tests run/added (one per line, " - ")
-     - PROMPT_TEXT: full user input (verbatim, not truncated)
-     - RESPONSE_TEXT: key assistant output (concise but representative)
-     - Any OUTCOME/EVALUATION fields required by the template
-   - Write the completed file with agent file tools (WriteFile/Edit).
-   - Confirm absolute path in output.
+### Backend
+- Python FastAPI
+- SQLModel ORM
+- Neon Serverless PostgreSQL
+- JWT verification middleware
+- Stateless architecture
 
-4) Use sp.phr command file if present
-   - If `.**/commands/sp.phr.*` exists, follow its structure.
-   - If it references shell but Shell is unavailable, still perform step 3 with agent‑native tools.
+---
 
-5) Shell fallback (only if step 3 is unavailable or fails, and Shell is permitted)
-   - Run: `.specify/scripts/bash/create-phr.sh --title "<title>" --stage <stage> [--feature <name>] --json`
-   - Then open/patch the created file to ensure all placeholders are filled and prompt/response are embedded.
+## Database & Authentication Context
 
-6) Routing (automatic, all under history/prompts/)
-   - Constitution → `history/prompts/constitution/`
-   - Feature stages → `history/prompts/<feature-name>/` (auto-detected from branch or explicit feature context)
-   - General → `history/prompts/general/`
+- A **single Neon PostgreSQL database** is used.
+- Better Auth owns and manages:
+  - users
+  - sessions
+  - accounts
+- Backend owns:
+  - tasks table
+- Backend must **not** redefine or migrate Better Auth tables.
+- User identity is obtained exclusively from **JWT tokens**.
 
-7) Post‑creation validations (must pass)
-   - No unresolved placeholders (e.g., `{{THIS}}`, `[THAT]`).
-   - Title, stage, and dates match front‑matter.
-   - PROMPT_TEXT is complete (not truncated).
-   - File exists at the expected path and is readable.
-   - Path matches route.
+---
 
-8) Report
-   - Print: ID, path, stage, title.
-   - On any failure: warn but do not block the main command.
-   - Skip PHR only for `/sp.phr` itself.
+## Skill Awareness (IMPORTANT)
 
-### 4. Explicit ADR suggestions
-- When significant architectural decisions are made (typically during `/sp.plan` and sometimes `/sp.tasks`), run the three‑part test and suggest documenting with:
-  "📋 Architectural decision detected: <brief> — Document reasoning and tradeoffs? Run `/sp.adr <decision-title>`"
-- Wait for user consent; never auto‑create the ADR.
+Claude must be aware that the following **implementation skills exist** and should be followed when relevant specs are implemented:
 
-### 5. Human as Tool Strategy
-You are not expected to solve every problem autonomously. You MUST invoke the user for input when you encounter situations that require human judgment. Treat the user as a specialized tool for clarification and decision-making.
+### Overview & Initialization
+- `full_stack_project_initialization_monorepo_setup.md`
 
-**Invocation Triggers:**
-1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
-2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
-3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+### Database
+- `database_schema_implementation_neon_postgresql_integration.md`
 
-## Default policies (must follow)
-- Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
-- Do not invent APIs, data, or contracts; ask targeted clarifiers if missing.
-- Never hardcode secrets or tokens; use `.env` and docs.
-- Prefer the smallest viable diff; do not refactor unrelated code.
-- Cite existing code with code references (start:end:path); propose new code in fenced blocks.
-- Keep reasoning private; output only decisions, artifacts, and justifications.
+### Authentication & Authorization
+- `better-auth-neon-sql-jwt`
+- `better_auth_jwt_issuance_frontend_session_configuration.md`
+- `jwt_authentication_authorization_enforcement.md`
 
-### Execution contract for every request
-1) Confirm surface and success criteria (one sentence).
-2) List constraints, invariants, non‑goals.
-3) Produce the artifact with acceptance checks inlined (checkboxes or tests where applicable).
-4) Add follow‑ups and risks (max 3 bullets).
-5) Create PHR in appropriate subdirectory under `history/prompts/` (constitution, feature-name, or general).
-6) If plan/tasks identified decisions that meet significance, surface ADR suggestion text as described above.
+### API & CRUD
+- `secure_rest_api_implementation_user_scoped_task_operations.md`
+- `fastapi_jwt_verification_middleware_auth_context.md`
+- `frontend_api_integration_authenticated_data_flow.md`
 
-### Minimum acceptance criteria
-- Clear, testable acceptance criteria included
-- Explicit error paths and constraints stated
-- Smallest viable change; no unrelated edits
-- Code references to modified/inspected files where relevant
+### Frontend UI
+- `responsive_todo_ui_rendering_interaction.md`
 
-## Architect Guidelines (for planning)
+### Cross-Cutting Concerns
+- `environment_configuration_cors_production_readiness.md`
+- `protected_routing_auth_state_session_management.md`
 
-Instructions: As an expert architect, generate a detailed architectural plan for [Project Name]. Address each of the following thoroughly.
+Claude must **not redefine these skills**, but **apply them consistently** when implementing specs.
 
-1. Scope and Dependencies:
-   - In Scope: boundaries and key features.
-   - Out of Scope: explicitly excluded items.
-   - External Dependencies: systems/services/teams and ownership.
+---
 
-2. Key Decisions and Rationale:
-   - Options Considered, Trade-offs, Rationale.
-   - Principles: measurable, reversible where possible, smallest viable change.
+## Phase Awareness
 
-3. Interfaces and API Contracts:
-   - Public APIs: Inputs, Outputs, Errors.
-   - Versioning Strategy.
-   - Idempotency, Timeouts, Retries.
-   - Error Taxonomy with status codes.
+Claude must respect phase boundaries:
+- Phase I → No database, no auth, no web UI
+- Phase II → Web + DB + Auth, no chatbot
+- Phase III → AI + MCP, no breaking changes to Phase II
 
-4. Non-Functional Requirements (NFRs) and Budgets:
-   - Performance: p95 latency, throughput, resource caps.
-   - Reliability: SLOs, error budgets, degradation strategy.
-   - Security: AuthN/AuthZ, data handling, secrets, auditing.
-   - Cost: unit economics.
+If a spec violates phase scope, request clarification.
 
-5. Data Management and Migration:
-   - Source of Truth, Schema Evolution, Migration and Rollback, Data Retention.
+---
 
-6. Operational Readiness:
-   - Observability: logs, metrics, traces.
-   - Alerting: thresholds and on-call owners.
-   - Runbooks for common tasks.
-   - Deployment and Rollback strategies.
-   - Feature Flags and compatibility.
+## Failure Mode Handling
 
-7. Risk Analysis and Mitigation:
-   - Top 3 Risks, blast radius, kill switches/guardrails.
+If:
+- A spec contradicts the constitution
+- A required dependency spec is missing
+- A skill constraint conflicts with a spec
 
-8. Evaluation and Validation:
-   - Definition of Done (tests, scans).
-   - Output Validation for format/requirements/safety.
+Claude must STOP and request clarification.
 
-9. Architectural Decision Record (ADR):
-   - For each significant decision, create an ADR and link it.
+---
 
-### Architecture Decision Records (ADR) - Intelligent Suggestion
+## Summary
 
-After design/architecture work, test for ADR significance:
+Claude Code’s job is to:
+1. Read specs
+2. Apply skills
+3. Implement exactly what is specified
+4. Preserve architecture integrity
+5. Never guess
 
-- Impact: long-term consequences? (e.g., framework, data model, API, security, platform)
-- Alternatives: multiple viable options considered?
-- Scope: cross‑cutting and influences system design?
+This file governs all Claude Code behavior in this repository.
 
-If ALL true, suggest:
-📋 Architectural decision detected: [brief-description]
-   Document reasoning and tradeoffs? Run `/sp.adr [decision-title]`
+## Active Technologies
+- Python 3.11 (Backend), TypeScript/JavaScript (Frontend), Next.js 16+ + Better Auth, FastAPI, SQLModel, Neon PostgreSQL, JWT (001-auth-db-ownership)
+- Neon PostgreSQL (shared database instance with separate ownership) (001-auth-db-ownership)
+- Python 3.11 (Backend), TypeScript/JavaScript (Frontend) + Better Auth, FastAPI, SQLModel, Next.js 16+ (001-jwt-auth-verification)
+- Python 3.11 (Backend), TypeScript/JavaScript (Frontend) + FastAPI, Next.js 16+, Better Auth, SQLModel, Neon PostgreSQL, JWT (002-tasks-crud-verification)
+- Neon PostgreSQL database with tasks table (user-owned data) (002-tasks-crud-verification)
+- Python 3.11 (Backend), TypeScript/JavaScript (Frontend) + Better Auth, FastAPI, SQLModel, Next.js 16+, Neon PostgreSQL, JWT (003-auth-jwt-integration)
 
-Wait for consent; never auto-create ADRs. Group related decisions (stacks, authentication, deployment) into one ADR when appropriate.
-
-## Basic Project Structure
-
-- `.specify/memory/constitution.md` — Project principles
-- `specs/<feature>/spec.md` — Feature requirements
-- `specs/<feature>/plan.md` — Architecture decisions
-- `specs/<feature>/tasks.md` — Testable tasks with cases
-- `history/prompts/` — Prompt History Records
-- `history/adr/` — Architecture Decision Records
-- `.specify/` — SpecKit Plus templates and scripts
-
-## Code Standards
-See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+## Recent Changes
+- 001-auth-db-ownership: Added Python 3.11 (Backend), TypeScript/JavaScript (Frontend), Next.js 16+ + Better Auth, FastAPI, SQLModel, Neon PostgreSQL, JWT
