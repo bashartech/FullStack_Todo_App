@@ -51,17 +51,34 @@ def create_task(
 def read_tasks(
     user_id: str = Depends(get_user_id_from_token),
     session: Session = Depends(get_session),
-    completed: str = None  # "all", "pending", "completed"
+    completed: str = None,  # "all", "pending", "completed"
+    priority: str = None,   # "low", "medium", "high"
+    search: str = None,     # search term for title/description
+    sort: str = "created_at",  # field to sort by
+    order: str = "desc",      # sort order: "asc" or "desc"
+    tags: str = None        # tag to filter by
 ):
     """
-    Retrieve all tasks for the authenticated user.
+    Retrieve all tasks for the authenticated user with optional filtering, search, and sorting.
 
-    Optionally filter by completion status:
-    - completed="pending" returns only incomplete tasks
-    - completed="completed" returns only completed tasks
-    - completed="all" or not specified returns all tasks
+    Query parameters:
+    - completed: Filter by completion status ("pending", "completed", "all")
+    - priority: Filter by priority level ("low", "medium", "high")
+    - search: Search term to match in title or description
+    - sort: Field to sort by ("created_at", "due_date", "priority", "title")
+    - order: Sort order ("asc", "desc")
+    - tags: Filter by a specific tag
     """
-    tasks = get_tasks_by_user(session, user_id, completed)
+    tasks = get_tasks_by_user(
+        session,
+        user_id,
+        completed=completed,
+        priority=priority,
+        search=search,
+        sort=sort,
+        order=order,
+        tags=tags
+    )
     return tasks
 
 
