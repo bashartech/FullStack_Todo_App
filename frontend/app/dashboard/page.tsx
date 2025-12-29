@@ -1,220 +1,911 @@
-'use client';
+// 'use client';
 
-import { useState, useEffect } from 'react';
-import { api, Task } from '@/lib/api';
-import { useRouter } from 'next/navigation';
-import TaskItem from '@/components/task/TaskItem';
-import Logout from '@/components/logout'
+// import { useState, useEffect } from 'react';
+// import { api, Task } from '@/lib/api';
+// import { useRouter } from 'next/navigation';
+// import TaskItem from '@/components/task/TaskItem';
+// import Logout from '@/components/logout';
+// import LoadingSpinner from '@/components/LoadingSpinner';
+
+// export default function DashboardPage() {
+//   const [tasks, setTasks] = useState<Task[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [newTaskTitle, setNewTaskTitle] = useState('');
+//   const [newTaskDescription, setNewTaskDescription] = useState('');
+//   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('medium');
+//   const [newTaskTags, setNewTaskTags] = useState('');
+//   const [newTaskDueDate, setNewTaskDueDate] = useState('');
+//   const [error, setError] = useState<string | null>(null);
+//   const [success, setSuccess] = useState<string | null>(null);
+//   const [filterCompleted, setFilterCompleted] = useState<'all' | 'pending' | 'completed'>('all');
+//   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [sortField, setSortField] = useState<'created_at' | 'due_date' | 'priority' | 'title'>('created_at');
+//   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+//   const [isCreatingTask, setIsCreatingTask] = useState(false);
+//   const router = useRouter();
+
+//   // Fetch tasks with filters, search, and sorting on component mount and when filters change
+//   useEffect(() => {
+//     fetchTasks();
+//   }, [filterCompleted, filterPriority, searchQuery, sortField, sortOrder]);
+
+//   const fetchTasks = async () => {
+//     try {
+//       setLoading(true);
+//       const tasksData = await api.tasks.getTasks(
+//         filterCompleted !== 'all' ? filterCompleted : undefined,
+//         filterPriority !== 'all' ? filterPriority : undefined,
+//         searchQuery || undefined,
+//         sortField,
+//         sortOrder
+//       );
+//       setTasks(tasksData);
+//       setError(null);
+//     } catch (err) {
+//       setError('Failed to load tasks. Please try again.');
+//       console.error('Error fetching tasks:', err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleCreateTask = async (e: React.FormEvent) => {
+//     e.preventDefault();
+
+//     if (!newTaskTitle.trim()) {
+//       setError('Task title is required');
+//       return;
+//     }
+
+//     try {
+//       setIsCreatingTask(true);
+//       setError(null);
+
+//       // Parse tags from comma-separated string
+//       const tagsArray = newTaskTags
+//         ? newTaskTags.split(',').map(tag => tag.trim()).filter(tag => tag)
+//         : [];
+
+//       const newTask = await api.tasks.createTask({
+//         title: newTaskTitle,
+//         description: newTaskDescription,
+//         completed: false,
+//         priority: newTaskPriority,
+//         tags: tagsArray,
+//         due_date: newTaskDueDate || undefined,
+//       });
+
+//       setTasks([newTask, ...tasks]);
+//       // Reset form fields
+//       setNewTaskTitle('');
+//       setNewTaskDescription('');
+//       setNewTaskPriority('medium');
+//       setNewTaskTags('');
+//       setNewTaskDueDate('');
+//       setSuccess('Task created successfully!');
+
+//       // Clear success message after 3 seconds
+//       setTimeout(() => setSuccess(null), 3000);
+//     } catch (err) {
+//       setError('Failed to create task. Please try again.');
+//       console.error('Error creating task:', err);
+//     } finally {
+//       setIsCreatingTask(false);
+//     }
+//   };
+
+//   const handleUpdateTask = (updatedTask: Task) => {
+//     setTasks(tasks.map(task =>
+//       task.id === updatedTask.id ? updatedTask : task
+//     ));
+//   };
+
+//   const handleDeleteTask = async (taskId: number) => {
+//     if (!window.confirm('Are you sure you want to delete this task?')) {
+//       return;
+//     }
+
+//     try {
+//       setError(null);
+//       await api.tasks.deleteTask(taskId);
+//       setTasks(tasks.filter(task => task.id !== taskId));
+//       setSuccess('Task deleted successfully!');
+
+//       // Clear success message after 3 seconds
+//       setTimeout(() => setSuccess(null), 3000);
+//     } catch (err) {
+//       setError('Failed to delete task. Please try again.');
+//       console.error('Error deleting task:', err);
+//     }
+//   };
+
+//   const handleToggleTaskCompletion = async (taskId: number) => {
+//     try {
+//       setError(null);
+//       const updatedTask = await api.tasks.toggleTaskCompletion(taskId);
+
+//       setTasks(tasks.map(task =>
+//         task.id === taskId ? updatedTask : task
+//       ));
+//     } catch (err) {
+//       setError('Failed to update task. Please try again.');
+//       console.error('Error updating task:', err);
+//     }
+//   };
+
+//   const handleSignOut = async () => {
+//     try {
+//       await Logout();
+//       router.push('/');
+//     } catch (err) {
+//       setError('Failed to sign out. Please try again.');
+//       console.error('Error signing out:', err);
+//     }
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-animated bg-noise">
+//       {/* Animated background elements */}
+//       <div className="absolute inset-0 overflow-hidden">
+//         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+//         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+//       </div>
+
+//       <div className="relative max-w-6xl mx-auto px-4 py-8">
+//         <div className="flex justify-between items-center mb-8">
+//           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
+//             My Tasks
+//           </h1>
+//           <div className="flex items-center space-x-4">
+//             <button
+//               onClick={handleSignOut}
+//               className="btn-outline px-4 py-2 text-sm"
+//             >
+//               Sign Out
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Success/Error Messages */}
+//         {error && (
+//           <div className="mb-4 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg backdrop-blur-sm">
+//             {error}
+//           </div>
+//         )}
+//         {success && (
+//           <div className="mb-4 p-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg backdrop-blur-sm">
+//             {success}
+//           </div>
+//         )}
+
+//         {/* Search and Filter Controls */}
+//         <div className="card-glass mb-6">
+//           <h2 className="text-lg font-semibold text-white mb-4">Search & Filter</h2>
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+//             <div>
+//               <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Search
+//               </label>
+//               <input
+//                 type="text"
+//                 id="search"
+//                 value={searchQuery}
+//                 onChange={(e) => setSearchQuery(e.target.value)}
+//                 className="input-glass w-full px-3 py-2"
+//                 placeholder="Search tasks..."
+//               />
+//             </div>
+//             <div>
+//               <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Status
+//               </label>
+//               <select
+//                 id="status"
+//                 value={filterCompleted}
+//                 onChange={(e) => setFilterCompleted(e.target.value as 'all' | 'pending' | 'completed')}
+//                 className="input-glass w-full px-3 py-2"
+//               >
+//                 <option value="all">All</option>
+//                 <option value="pending">Pending</option>
+//                 <option value="completed">Completed</option>
+//               </select>
+//             </div>
+//             <div>
+//               <label htmlFor="priority" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Priority
+//               </label>
+//               <select
+//                 id="priority"
+//                 value={filterPriority}
+//                 onChange={(e) => setFilterPriority(e.target.value as 'all' | 'low' | 'medium' | 'high')}
+//                 className="input-glass w-full px-3 py-2"
+//               >
+//                 <option value="all">All Priorities</option>
+//                 <option value="low">Low</option>
+//                 <option value="medium">Medium</option>
+//                 <option value="high">High</option>
+//               </select>
+//             </div>
+//             <div>
+//               <label htmlFor="sort" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Sort By
+//               </label>
+//               <div className="flex space-x-2">
+//                 <select
+//                   id="sort"
+//                   value={sortField}
+//                   onChange={(e) => setSortField(e.target.value as 'created_at' | 'due_date' | 'priority' | 'title')}
+//                   className="input-glass w-full px-3 py-2"
+//                 >
+//                   <option value="created_at">Created Date</option>
+//                   <option value="due_date">Due Date</option>
+//                   <option value="priority">Priority</option>
+//                   <option value="title">Title</option>
+//                 </select>
+//                 <select
+//                   value={sortOrder}
+//                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+//                   className="input-glass w-20 px-3 py-2"
+//                 >
+//                   <option value="desc">Desc</option>
+//                   <option value="asc">Asc</option>
+//                 </select>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Task Creation Form */}
+//         <div className="card-glass mb-8">
+//           <h2 className="text-xl font-semibold text-white mb-4">Create New Task</h2>
+//           <form onSubmit={handleCreateTask}>
+//             <div className="mb-4">
+//               <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Title *
+//               </label>
+//               <input
+//                 type="text"
+//                 id="title"
+//                 value={newTaskTitle}
+//                 onChange={(e) => setNewTaskTitle(e.target.value)}
+//                 className="input-glass w-full px-3 py-2 text-white"
+//                 placeholder="What needs to be done?"
+//                 required
+//               />
+//             </div>
+//             <div className="mb-4">
+//               <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+//                 Description
+//               </label>
+//               <textarea
+//                 id="description"
+//                 value={newTaskDescription}
+//                 onChange={(e) => setNewTaskDescription(e.target.value)}
+//                 className="input-glass w-full px-3 py-2 text-white"
+//                 placeholder="Add details (optional)"
+//                 rows={3}
+//               />
+//             </div>
+//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+//               <div>
+//                 <label htmlFor="priority" className="block text-sm font-medium text-gray-300 mb-1">
+//                   Priority
+//                 </label>
+//                 <select
+//                   id="priority"
+//                   value={newTaskPriority}
+//                   onChange={(e) => setNewTaskPriority(e.target.value as 'low' | 'medium' | 'high')}
+//                   className="input-glass w-full px-3 py-2 text-white"
+//                 >
+//                   <option value="low">Low</option>
+//                   <option value="medium">Medium</option>
+//                   <option value="high">High</option>
+//                 </select>
+//               </div>
+//               <div>
+//                 <label htmlFor="dueDate" className="block text-sm font-medium text-gray-300 mb-1">
+//                   Due Date
+//                 </label>
+//                 <input
+//                   type="date"
+//                   id="dueDate"
+//                   value={newTaskDueDate}
+//                   onChange={(e) => setNewTaskDueDate(e.target.value)}
+//                   className="input-glass w-full px-3 py-2 text-white"
+//                 />
+//               </div>
+//               <div>
+//                 <label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-1">
+//                   Tags
+//                 </label>
+//                 <input
+//                   type="text"
+//                   id="tags"
+//                   value={newTaskTags}
+//                   onChange={(e) => setNewTaskTags(e.target.value)}
+//                   className="input-glass w-full px-3 py-2 text-white"
+//                   placeholder="Tag1, Tag2, Tag3"
+//                 />
+//               </div>
+//             </div>
+//             <button
+//               type="submit"
+//               disabled={isCreatingTask}
+//               className="btn-primary w-full flex items-center justify-center"
+//             >
+//               {isCreatingTask ? (
+//                 <>
+//                   <span className="spinner-white mr-2"></span>
+//                   Creating...
+//                 </>
+//               ) : (
+//                 'Create Task'
+//               )}
+//             </button>
+//           </form>
+//         </div>
+
+//         {/* Tasks List */}
+//         <div className="card-glass">
+//           <div className="px-6 py-4 border-b border-gray-700/50">
+//             <h2 className="text-xl font-semibold text-white">Your Tasks</h2>
+//           </div>
+
+//           {loading ? (
+//             <div className="p-12 text-center">
+//               <LoadingSpinner />
+//               <p className="mt-4 text-gray-400">Loading tasks...</p>
+//             </div>
+//           ) : tasks.length === 0 ? (
+//             <div className="p-12 text-center">
+//               <p className="text-gray-400">No tasks yet. Create your first task above!</p>
+//             </div>
+//           ) : (
+//             <ul className="divide-y divide-gray-700/50">
+//               {tasks.map((task) => (
+//                 <TaskItem
+//                   key={task.id}
+//                   task={task}
+//                   onUpdate={handleUpdateTask}
+//                   onDelete={handleDeleteTask}
+//                   onToggleCompletion={handleToggleTaskCompletion}
+//                 />
+//               ))}
+//             </ul>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { api, type Task } from "@/lib/api"
+import { useRouter } from "next/navigation"
+import TaskItem from "@/components/task/TaskItem"
+import Logout from "@/components/logout"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function DashboardPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const router = useRouter();
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newTaskTitle, setNewTaskTitle] = useState("")
+  const [newTaskDescription, setNewTaskDescription] = useState("")
+  const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
+  const [newTaskTags, setNewTaskTags] = useState("")
+  const [newTaskDueDate, setNewTaskDueDate] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [filterCompleted, setFilterCompleted] = useState<"all" | "pending" | "completed">("all")
+  const [filterPriority, setFilterPriority] = useState<"all" | "low" | "medium" | "high">("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortField, setSortField] = useState<"created_at" | "due_date" | "priority" | "title">("created_at")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [isCreatingTask, setIsCreatingTask] = useState(false)
+  const router = useRouter()
 
-  // Fetch tasks on component mount
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    fetchTasks()
+  }, [filterCompleted, filterPriority, searchQuery, sortField, sortOrder])
 
   const fetchTasks = async () => {
     try {
-      setLoading(true);
-      const tasksData = await api.tasks.getTasks();
-      setTasks(tasksData);
-      setError(null);
+      setLoading(true)
+      const tasksData = await api.tasks.getTasks(
+        filterCompleted !== "all" ? filterCompleted : undefined,
+        filterPriority !== "all" ? filterPriority : undefined,
+        searchQuery || undefined,
+        sortField,
+        sortOrder,
+      )
+      setTasks(tasksData)
+      setError(null)
     } catch (err) {
-      setError('Failed to load tasks. Please try again.');
-      console.error('Error fetching tasks:', err);
+      setError("Failed to load tasks. Please try again.")
+      console.error("Error fetching tasks:", err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!newTaskTitle.trim()) {
-      setError('Task title is required');
-      return;
+      setError("Task title is required")
+      return
     }
 
     try {
+      setIsCreatingTask(true)
+      setError(null)
+
+      const tagsArray = newTaskTags
+        ? newTaskTags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag)
+        : []
+
       const newTask = await api.tasks.createTask({
         title: newTaskTitle,
         description: newTaskDescription,
         completed: false,
-      });
+        priority: newTaskPriority,
+        tags: tagsArray,
+        due_date: newTaskDueDate || undefined,
+      })
 
-      setTasks([newTask, ...tasks]);
-      setNewTaskTitle('');
-      setNewTaskDescription('');
-      setSuccess('Task created successfully!');
-      setError(null);
+      setTasks([newTask, ...tasks])
+      setNewTaskTitle("")
+      setNewTaskDescription("")
+      setNewTaskPriority("medium")
+      setNewTaskTags("")
+      setNewTaskDueDate("")
+      setSuccess("Task created successfully!")
 
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000);
+      setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      setError('Failed to create task. Please try again.');
-      console.error('Error creating task:', err);
+      setError("Failed to create task. Please try again.")
+      console.error("Error creating task:", err)
+    } finally {
+      setIsCreatingTask(false)
     }
-  };
+  }
 
   const handleUpdateTask = (updatedTask: Task) => {
-    setTasks(tasks.map(task =>
-      task.id === updatedTask.id ? updatedTask : task
-    ));
-  };
+    setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)))
+  }
 
   const handleDeleteTask = async (taskId: number) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) {
-      return;
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return
     }
 
     try {
-      await api.tasks.deleteTask(taskId);
-      setTasks(tasks.filter(task => task.id !== taskId));
-      setSuccess('Task deleted successfully!');
+      setError(null)
+      await api.tasks.deleteTask(taskId)
+      setTasks(tasks.filter((task) => task.id !== taskId))
+      setSuccess("Task deleted successfully!")
 
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(null), 3000);
+      setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      setError('Failed to delete task. Please try again.');
-      console.error('Error deleting task:', err);
+      setError("Failed to delete task. Please try again.")
+      console.error("Error deleting task:", err)
     }
-  };
+  }
 
   const handleToggleTaskCompletion = async (taskId: number) => {
     try {
-      const updatedTask = await api.tasks.toggleTaskCompletion(taskId);
+      setError(null)
+      const updatedTask = await api.tasks.toggleTaskCompletion(taskId)
 
-      setTasks(tasks.map(task =>
-        task.id === taskId ? updatedTask : task
-      ));
+      setTasks(tasks.map((task) => (task.id === taskId ? updatedTask : task)))
     } catch (err) {
-      setError('Failed to update task. Please try again.');
-      console.error('Error updating task:', err);
+      setError("Failed to update task. Please try again.")
+      console.error("Error updating task:", err)
     }
-  };
+  }
 
   const handleSignOut = async () => {
     try {
-      await Logout();
-      router.push('/');
+      await Logout()
+      router.push("/")
     } catch (err) {
-      setError('Failed to sign out. Please try again.');
-      console.error('Error signing out:', err);
+      setError("Failed to sign out. Please try again.")
+      console.error("Error signing out:", err)
     }
-  };
+  }
+
+  const totalTasks = tasks.length
+  const completedTasks = tasks.filter((t) => t.completed).length
+  const pendingTasks = totalTasks - completedTasks
+  const highPriorityTasks = tasks.filter((t) => t.priority === "high" && !t.completed).length
 
   return (
-    <div className="max-w-4xl bg-white mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
-        <div className="flex items-center space-x-4">
-          {/* <span className="text-gray-600">Welcome, {user?.email || user?.name || 'User'}</span> */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl animate-pulse"></div>
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-600/15 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div
+          className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 animate-fade-in">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-white via-blue-200 to-cyan-200 bg-clip-text text-transparent mb-3">
+              Task Dashboard
+            </h1>
+            <p className="text-gray-400 text-lg">Organize, prioritize, and achieve your goals</p>
+          </div>
           <button
             onClick={handleSignOut}
-            className="text-sm bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md transition-colors"
+            className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-500/20 whitespace-nowrap"
           >
             Sign Out
           </button>
         </div>
-      </div>
 
-      {/* Success/Error Messages */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10 animate-slide-up">
+          <div className="group bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium mb-2">Total Tasks</p>
+                <p className="text-3xl md:text-4xl font-bold text-white">{totalTasks}</p>
+                <p className="text-xs text-gray-500 mt-2">All your tasks</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-all">
+                <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="group bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-6 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium mb-2">Completed</p>
+                <p className="text-3xl md:text-4xl font-bold text-white">{completedTasks}</p>
+                <p className="text-xs text-green-500 mt-2">
+                  {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}% done
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center group-hover:bg-green-500/30 transition-all">
+                <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="group bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-6 hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/10 hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium mb-2">Pending</p>
+                <p className="text-3xl md:text-4xl font-bold text-white">{pendingTasks}</p>
+                <p className="text-xs text-yellow-500 mt-2">
+                  {totalTasks > 0 ? Math.round((pendingTasks / totalTasks) * 100) : 0}% remaining
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center group-hover:bg-yellow-500/30 transition-all">
+                <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="group bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-6 hover:border-red-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10 hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm font-medium mb-2">High Priority</p>
+                <p className="text-3xl md:text-4xl font-bold text-white">{highPriorityTasks}</p>
+                <p className="text-xs text-red-500 mt-2">Urgent items</p>
+              </div>
+              <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center group-hover:bg-red-500/30 transition-all">
+                <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 text-green-700 rounded-md">
-          {success}
-        </div>
-      )}
 
-      {/* Task Creation Form */}
-      <div className="bg-white shadow rounded-lg p-6 mb-8">
-        <h2 className="text-xl text-black font-semibold mb-4">Create New Task</h2>
-        <form onSubmit={handleCreateTask}>
-          <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-900 mb-1">
-              Title *
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="w-full text-gray-900 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="What needs to be done?"
-              required
-            />
+        {/* Alerts */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/15 border border-red-500/30 text-red-300 rounded-lg backdrop-blur-sm animate-slide-down">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414 1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {error}
+            </div>
           </div>
-          <div className="mb-4">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-900 mb-1">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={newTaskDescription}
-              onChange={(e) => setNewTaskDescription(e.target.value)}
-              className="w-full text-gray-900 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add details (optional)"
-              rows={3}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Creating...' : 'Create Task'}
-          </button>
-        </form>
-      </div>
-
-      {/* Tasks List */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">Your Tasks</h2>
-        </div>
-
-        {loading ? (
-          <div className="p-8 text-center">
-            <p>Loading tasks...</p>
-          </div>
-        ) : tasks.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-500">No tasks yet. Create your first task above!</p>
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {tasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onUpdate={handleUpdateTask}
-                onDelete={handleDeleteTask}
-                onToggleCompletion={handleToggleTaskCompletion}
-              />
-            ))}
-          </ul>
         )}
+        {success && (
+          <div className="mb-6 p-4 bg-green-500/15 border border-green-500/30 text-green-300 rounded-lg backdrop-blur-sm animate-slide-down">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {success}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-6 mb-8 animate-slide-up">
+          <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            Search &amp; Filter Tasks
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Search</label>
+              <div className="relative">
+                <svg
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                  placeholder="Search by title or description..."
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Status</label>
+              <select
+                value={filterCompleted}
+                onChange={(e) => setFilterCompleted(e.target.value as "all" | "pending" | "completed")}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Priority</label>
+              <select
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value as "all" | "low" | "medium" | "high")}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+              >
+                <option value="all">All Priorities</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Sort By</label>
+              <select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as "created_at" | "due_date" | "priority" | "title")}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+              >
+                <option value="created_at">Created Date</option>
+                <option value="due_date">Due Date</option>
+                <option value="priority">Priority</option>
+                <option value="title">Title A-Z</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl p-8 mb-10 animate-slide-up">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create New Task
+          </h2>
+          <form onSubmit={handleCreateTask} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Task Title *</label>
+              <input
+                type="text"
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                placeholder="What needs to be done?"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
+              <textarea
+                value={newTaskDescription}
+                onChange={(e) => setNewTaskDescription(e.target.value)}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                placeholder="Add task details (optional)"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Priority</label>
+                <select
+                  value={newTaskPriority}
+                  onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Due Date</label>
+                <input
+                  type="date"
+                  value={newTaskDueDate}
+                  onChange={(e) => setNewTaskDueDate(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Tags</label>
+                <input
+                  type="text"
+                  value={newTaskTags}
+                  onChange={(e) => setNewTaskTags(e.target.value)}
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                  placeholder="work, urgent, bug"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isCreatingTask}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isCreatingTask ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Task
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+        <div className="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800/50 rounded-xl overflow-hidden animate-slide-up">
+          <div className="px-6 py-5 border-b border-neutral-800/50 bg-gradient-to-r from-neutral-900 to-neutral-950">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
+              Your Tasks ({totalTasks})
+            </h2>
+          </div>
+
+          {loading ? (
+            <div className="p-12 text-center">
+              <LoadingSpinner />
+              <p className="mt-4 text-gray-400">Loading your tasks...</p>
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="p-12 text-center">
+              <svg
+                className="w-16 h-16 text-gray-600 mx-auto mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
+              <p className="text-gray-400 text-lg">No tasks yet. Create your first task above!</p>
+              <p className="text-gray-500 text-sm mt-2">Get started by adding a new task to your dashboard.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-neutral-800/50">
+              {tasks.map((task, idx) => (
+                <div key={task.id} style={{ animationDelay: `${idx * 0.05}s` }} className="animate-fade-in">
+                  <TaskItem
+                    task={task}
+                    onUpdate={handleUpdateTask}
+                    onDelete={handleDeleteTask}
+                    onToggleCompletion={handleToggleTaskCompletion}
+                  />
+                </div>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
-    // <>
-    // <div className='text-white'>
-    // hi
-    // <div className='border-4 cursor-pointer bg-slate-400 text-slate-950 '>
-    //   < Logout  />
-    // </div>
-
-    // </div>
-    // </>
-  );
+  )
 }

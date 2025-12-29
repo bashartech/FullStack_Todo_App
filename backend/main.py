@@ -40,6 +40,7 @@ try:
     from .routes import tasks
 except ImportError:
     from routes import tasks
+
 app.include_router(tasks.router, prefix="/api")
 
 if __name__ == "__main__":
