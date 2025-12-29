@@ -406,6 +406,8 @@ export default function DashboardPage() {
   const [sortField, setSortField] = useState<"created_at" | "due_date" | "priority" | "title">("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [isCreatingTask, setIsCreatingTask] = useState(false)
+  const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null)
+  const [togglingTaskId, setTogglingTaskId] = useState<number | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -487,6 +489,7 @@ export default function DashboardPage() {
     }
 
     try {
+      setDeletingTaskId(taskId)
       setError(null)
       await api.tasks.deleteTask(taskId)
       setTasks(tasks.filter((task) => task.id !== taskId))
@@ -496,11 +499,14 @@ export default function DashboardPage() {
     } catch (err) {
       setError("Failed to delete task. Please try again.")
       console.error("Error deleting task:", err)
+    } finally {
+      setDeletingTaskId(null)
     }
   }
 
   const handleToggleTaskCompletion = async (taskId: number) => {
     try {
+      setTogglingTaskId(taskId)
       setError(null)
       const updatedTask = await api.tasks.toggleTaskCompletion(taskId)
 
@@ -508,6 +514,8 @@ export default function DashboardPage() {
     } catch (err) {
       setError("Failed to update task. Please try again.")
       console.error("Error updating task:", err)
+    } finally {
+      setTogglingTaskId(null)
     }
   }
 
@@ -899,6 +907,8 @@ export default function DashboardPage() {
                     onUpdate={handleUpdateTask}
                     onDelete={handleDeleteTask}
                     onToggleCompletion={handleToggleTaskCompletion}
+                    isDeleting={deletingTaskId}
+                    isToggling={togglingTaskId}
                   />
                 </div>
               ))}
