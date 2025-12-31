@@ -33,7 +33,7 @@ export const auth = betterAuth({
       enabled: true,
       issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
       maxAge: 7 * 24 * 60 * 60, // 7 days
-    }),
+    } as any),
     nextCookies() // Enable JWT token issuance
   ],
 });
