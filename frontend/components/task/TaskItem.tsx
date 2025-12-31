@@ -208,6 +208,10 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleCompletion,
   const [priority, setPriority] = useState<"low" | "medium" | "high">(task.priority || "medium")
   const [tags, setTags] = useState(task.tags?.join(", ") || "")
   const [dueDate, setDueDate] = useState(task.due_date || "")
+  const [isRecurring, setIsRecurring] = useState(task.is_recurring || false)
+  const [recurrenceType, setRecurrenceType] = useState<"daily" | "weekly" | "monthly">(task.recurrence_type || "weekly")
+  const [recurrenceInterval, setRecurrenceInterval] = useState(task.recurrence_interval || 1)
+  const [reminderAt, setReminderAt] = useState(task.reminder_at || "")
 
   const handleSave = () => {
     onUpdate({
@@ -222,6 +226,10 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleCompletion,
             .filter((tag) => tag)
         : [],
       due_date: dueDate || undefined,
+      is_recurring: isRecurring,
+      recurrence_type: isRecurring ? recurrenceType : undefined,
+      recurrence_interval: isRecurring ? recurrenceInterval : 1,
+      reminder_at: reminderAt || undefined,
     })
     setIsEditing(false)
   }
@@ -232,6 +240,10 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleCompletion,
     setPriority(task.priority || "medium")
     setTags(task.tags?.join(", ") || "")
     setDueDate(task.due_date || "")
+    setIsRecurring(task.is_recurring || false)
+    setRecurrenceType(task.recurrence_type || "weekly")
+    setRecurrenceInterval(task.recurrence_interval || 1)
+    setReminderAt(task.reminder_at || "")
     setIsEditing(false)
   }
 
@@ -306,6 +318,62 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleCompletion,
                   className="w-full px-4 py-3 bg-neutral-800/70 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   placeholder="Tags (comma separated)"
                 />
+
+                {/* Recurring Task Section */}
+                <div className="pt-4 border-t border-neutral-700/50">
+                  <div className="flex items-center mb-3">
+                    <input
+                      type="checkbox"
+                      id={`isRecurring-${task.id}`}
+                      checked={isRecurring}
+                      onChange={(e) => setIsRecurring(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-neutral-800/50 border-neutral-600 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor={`isRecurring-${task.id}`} className="ml-2 text-sm text-gray-300">
+                      Recurring task
+                    </label>
+                  </div>
+
+                  {isRecurring && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                      <div>
+                        <label className="block text-sm text-gray-300 mb-1">Recurrence Type</label>
+                        <select
+                          value={recurrenceType}
+                          onChange={(e) => setRecurrenceType(e.target.value as "daily" | "weekly" | "monthly")}
+                          className="w-full px-3 py-2 bg-neutral-800/70 border border-neutral-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        >
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm text-gray-300 mb-1">Interval</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={recurrenceInterval}
+                          onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 bg-neutral-800/70 border border-neutral-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Reminder Section */}
+                <div className="pt-4 border-t border-neutral-700/50">
+                  <label className="block text-sm text-gray-300 mb-1">Reminder</label>
+                  <input
+                    type="datetime-local"
+                    value={reminderAt}
+                    onChange={(e) => setReminderAt(e.target.value)}
+                    className="w-full px-3 py-2 bg-neutral-800/70 border border-neutral-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                  />
+                </div>
+
                 <div className="flex space-x-3 pt-2">
                   <button
                     onClick={handleSave}
@@ -382,6 +450,60 @@ export default function TaskItem({ task, onUpdate, onDelete, onToggleCompletion,
                       month: "short",
                       day: "numeric",
                       year: "numeric",
+                    })}
+                  </div>
+                )}
+
+                {/* Display recurrence info if available */}
+                {task.is_recurring && (
+                  <div className="flex items-center text-sm text-gray-400 mb-2 gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-green-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    Recurring:{" "}
+                    <span className="capitalize">
+                      {task.recurrence_interval > 1 ? `${task.recurrence_interval} ` : ""}
+                      {task.recurrence_type}
+                      {task.recurrence_interval > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                )}
+
+                {/* Display reminder info if available */}
+                {task.reminder_at && (
+                  <div className="flex items-center text-sm text-gray-400 mb-2 gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-yellow-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Reminder:{" "}
+                    {new Date(task.reminder_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </div>
                 )}

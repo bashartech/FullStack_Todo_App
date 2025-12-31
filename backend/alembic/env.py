@@ -13,6 +13,7 @@ from alembic import context
 
 # Import SQLModel and your models for autogenerate support
 from sqlmodel import SQLModel
+sys.path.insert(0, os.path.abspath('.'))  # Add current directory to path
 from models.task import Task
 
 # this is the Alembic Config object, which provides

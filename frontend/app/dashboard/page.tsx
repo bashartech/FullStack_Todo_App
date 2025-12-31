@@ -7,6 +7,7 @@ import { useState, useEffect } from "react"
 import { api, type Task } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import TaskItem from "@/components/task/TaskItem"
+import TaskReminder from "@/components/task/TaskReminder"
 import Logout from "@/components/logout"
 import LoadingSpinner from "@/components/LoadingSpinner"
 
@@ -18,6 +19,10 @@ export default function DashboardPage() {
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
   const [newTaskTags, setNewTaskTags] = useState("")
   const [newTaskDueDate, setNewTaskDueDate] = useState("")
+  const [newTaskIsRecurring, setNewTaskIsRecurring] = useState(false)
+  const [newTaskRecurrenceType, setNewTaskRecurrenceType] = useState<"daily" | "weekly" | "monthly">("weekly")
+  const [newTaskRecurrenceInterval, setNewTaskRecurrenceInterval] = useState(1)
+  const [newTaskReminderAt, setNewTaskReminderAt] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [filterCompleted, setFilterCompleted] = useState<"all" | "pending" | "completed">("all")
@@ -81,6 +86,10 @@ export default function DashboardPage() {
         priority: newTaskPriority,
         tags: tagsArray,
         due_date: newTaskDueDate || undefined,
+        is_recurring: newTaskIsRecurring,
+        recurrence_type: newTaskIsRecurring ? newTaskRecurrenceType : undefined,
+        recurrence_interval: newTaskIsRecurring ? newTaskRecurrenceInterval : 1,
+        reminder_at: newTaskReminderAt || undefined,
       })
 
       setTasks([newTask, ...tasks])
@@ -89,6 +98,10 @@ export default function DashboardPage() {
       setNewTaskPriority("medium")
       setNewTaskTags("")
       setNewTaskDueDate("")
+      setNewTaskIsRecurring(false)
+      setNewTaskRecurrenceType("weekly")
+      setNewTaskRecurrenceInterval(1)
+      setNewTaskReminderAt("")
       setSuccess("Task created successfully!")
 
       setTimeout(() => setSuccess(null), 3000)
@@ -415,7 +428,7 @@ export default function DashboardPage() {
                 <select
                   value={newTaskPriority}
                   onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
-                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -443,6 +456,63 @@ export default function DashboardPage() {
                   placeholder="work, urgent, bug"
                 />
               </div>
+            </div>
+
+            {/* Recurring Task Section */}
+            <div className="pt-4 border-t border-neutral-800/50">
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="isRecurring"
+                  checked={newTaskIsRecurring}
+                  onChange={(e) => setNewTaskIsRecurring(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 bg-neutral-800/50 border-neutral-700 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="isRecurring" className="ml-2 text-sm font-semibold text-gray-300">
+                  Make this a recurring task
+                </label>
+              </div>
+
+              {newTaskIsRecurring && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Recurrence Type</label>
+                    <select
+                      value={newTaskRecurrenceType}
+                      onChange={(e) => setNewTaskRecurrenceType(e.target.value as "daily" | "weekly" | "monthly")}
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Interval</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newTaskRecurrenceInterval}
+                      onChange={(e) => setNewTaskRecurrenceInterval(parseInt(e.target.value) || 1)}
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                      placeholder="1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Reminder Section */}
+            <div className="pt-4 border-t border-neutral-800/50">
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Set Reminder</label>
+              <input
+                type="datetime-local"
+                value={newTaskReminderAt}
+                onChange={(e) => setNewTaskReminderAt(e.target.value)}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                placeholder="Select reminder time"
+              />
             </div>
 
             <button
@@ -537,6 +607,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Task Reminder Component - Handles browser notifications for task reminders */}
+      <TaskReminder tasks={tasks} />
     </div>
   )
 }

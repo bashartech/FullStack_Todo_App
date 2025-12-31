@@ -1,145 +1,193 @@
-# Spec: Advanced Intelligent Task Features
+# Plan: Advanced Intelligent Task Features (Due Dates, Recurring Tasks, Reminders)
 
-## Purpose
-
-Introduce intelligent task automation features:
-1. Recurring Tasks
-2. Due Dates
-3. Time-based Reminders
-
-This spec builds on:
-- Existing Tasks CRUD
-- Existing JWT authentication
-- Existing Neon PostgreSQL + SQLModel setup
-
-No authentication, database connection, or CRUD logic should be recreated.
+**Feature ID**: 004-advanced-intelligent-tasks  
+**Branch**: `feature/intelligent-tasks`  
+**Input Spec**: `/specs/004-advanced-intelligent-tasks/spec.md`  
+**Project State**:  
+- Authentication (Better Auth + JWT) → ✅ Working  
+- Backend (FastAPI + Neon + SQLModel) → ✅ Connected  
+- Tasks CRUD → ⚠️ Exists but extended here  
+- No new services or infra required  
 
 ---
 
-## Feature Scope
+## Objective
 
-### Included
-- Task due dates
-- Recurrence rules (daily/weekly/monthly)
-- Auto-generation of next recurring task
-- Browser-based reminders
+Extend the existing task system with:
+1. Due Dates
+2. Recurring Tasks
+3. Browser-based Time Reminders
 
-### Excluded
-- Background workers
-- Push notifications
-- Cron jobs
-- External schedulers
+This plan **verifies, extends, and corrects** the current workflow without recreating existing logic.
 
 ---
 
-## Data Model Changes
+## Non-Goals (Strict)
 
-### New Fields in `models/task.py`
-
-| Field | Type | Description |
-|----|----|-----------|
-| due_date | datetime | Deadline for task |
-| is_recurring | bool | Whether task repeats |
-| recurrence_type | str | daily / weekly / monthly |
-| recurrence_interval | int | Usually 1 (MVP) |
-| next_run_at | datetime | Next occurrence date |
-| reminder_at | datetime | Time to trigger reminder |
+- ❌ No new authentication logic
+- ❌ No backend schedulers / cron jobs
+- ❌ No email or push notifications
+- ❌ No new databases or adapters
 
 ---
 
-## Backend Behavior
+## Phase 0: Pre-Check (MANDATORY)
 
-### Task Creation
-- Accept optional:
-  - due_date
-  - is_recurring
-  - recurrence_type
-  - reminder_at
-- Validate recurrence fields only if is_recurring = true
+> Claude MUST verify these before proceeding
 
----
+- [ ] Confirm `models/task.py` already exists
+- [ ] Confirm tasks table exists in Neon DB
+- [ ] Confirm JWT auth middleware is already enforced
+- [ ] Confirm CRUD endpoints already work without these features
 
-### Task Completion Logic
-
-When a task is marked as completed:
-1. Check if `is_recurring = true`
-2. If true:
-   - Calculate next due date
-   - Create a new task:
-     - Same title & description
-     - New due_date
-     - Same recurrence rules
-     - is_completed = false
-3. Preserve completed task as history
+If any of the above fail → STOP and report.
 
 ---
 
-### Recurrence Calculation Rules
+## Phase 1: Data Model Extension (Blocking)
 
-| Type | Rule |
-|----|-----|
-| daily | due_date + 1 day |
-| weekly | due_date + 7 days |
-| monthly | same date next month |
+### Goal
+Extend the existing Task model with new intelligent fields.
 
----
+### Tasks
 
-## Frontend Behavior
+- [ ] P001 Open `backend/models/task.py`
+- [ ] P002 Add the following fields **without removing existing ones**:
 
-### Task Form UI
-- Date picker for due date
-- Toggle for recurrence
-- Dropdown for recurrence type
-- Time picker for reminder
+  ```python
+  due_date: Optional[datetime]
+  is_recurring: bool = False
+  recurrence_type: Optional[str]  # daily | weekly | monthly
+  recurrence_interval: int = 1
+  next_run_at: Optional[datetime]
+  reminder_at: Optional[datetime]
+ P003 Ensure all new fields are nullable and backward-compatible
 
----
+ P004 Update SQLModel metadata only (no table rename)
 
-### Reminder Logic (Frontend Only)
+Phase 2: Database Migration (Blocking)
+Goal
+Apply schema changes safely to Neon PostgreSQL.
 
-1. On task fetch:
-   - Read reminder_at
-2. If reminder_at exists and is in future:
-   - Schedule browser notification
-3. Use Notification API:
-   - Request permission once
-4. Fire reminder with task title
+Tasks
+ P005 Generate migration using the existing Neon + SQLModel workflow
 
----
+ P006 Review migration to ensure:
 
-## UX Rules
+No table drops
 
-- Overdue tasks highlighted
-- Recurring tasks labeled (e.g., “Weekly”)
-- Reminder status visible (clock icon)
+Only column additions
 
----
+ P007 Apply migration to Neon DB
 
-## Acceptance Criteria
+ P008 Verify new columns exist using a SELECT query
 
-- User can set due dates
-- User can enable recurring tasks
-- Completing recurring task creates next one
-- Browser reminder fires at correct time
-- No duplicate recurring tasks created
-- No auth or CRUD regression
+Phase 3: Backend Logic — Due Dates
+Goal
+Enable due date storage and usage.
 
----
+Tasks
+ P009 Update task create endpoint to accept due_date
 
-## Non-Goals
+ P010 Update task update endpoint to allow modifying due_date
 
-- Server-side schedulers
-- Email reminders
-- Push notifications
-- Advanced recurrence rules
+ P011 Ensure due_date is validated as datetime
 
----
+ P012 Ensure overdue logic is NOT enforced server-side (UI only)
 
-## Validation Checklist
+Phase 4: Backend Logic — Recurring Tasks (Core Intelligence)
+Goal
+Auto-generate next task instance on completion.
 
-- Due dates stored correctly
-- Recurrence creates next task only once
-- Reminder fires only once
-- Works after page reload
-- Tasks remain user-scoped
+Tasks
+ P013 Update task completion logic (existing endpoint)
 
-End of spec.
+ P014 On completion:
+
+Check is_recurring == true
+
+Calculate next due date based on recurrence_type
+
+ P015 Create new task with:
+
+Same title & description
+
+New due_date
+
+Same recurrence rules
+
+is_completed = false
+
+ P016 Ensure:
+
+Only ONE new task is created
+
+Completed task remains unchanged
+
+Phase 5: Frontend — Due Date UI
+Goal
+Allow users to set and view due dates.
+
+Tasks
+ P017 Add date picker to task form
+
+ P018 Display due date in task list
+
+ P019 Highlight overdue tasks visually
+
+ P020 Ensure due date sorting works visually (no backend sort yet)
+
+Phase 6: Frontend — Recurring UI
+Goal
+Allow users to configure recurrence.
+
+Tasks
+ P021 Add recurrence toggle to task form
+
+ P022 Add recurrence type dropdown
+
+ P023 Disable recurrence inputs when toggle is off
+
+ P024 Display recurrence badge on task cards
+
+Phase 7: Frontend — Time Reminders (Browser Only)
+Goal
+Trigger reminders using browser notifications.
+
+Tasks
+ P025 Add reminder time picker
+
+ P026 Request Notification permission once
+
+ P027 On task load:
+
+Schedule reminders using setTimeout
+
+ P028 Ensure reminder fires only once
+
+ P029 Do NOT persist reminder timers in backend
+
+Phase 8: Integration Verification
+Goal
+Ensure everything works together.
+
+Tasks
+ P030 Create task with due date → verify storage
+
+ P031 Complete recurring task → verify next task created
+
+ P032 Reload page → reminders still work
+
+ P033 Verify no duplicate recurring tasks
+
+ P034 Verify no JWT or CRUD regression
+
+Phase 9: UX & Edge Case Handling
+Tasks
+ P035 Handle timezone safely (use ISO timestamps)
+
+ P036 Prevent reminder scheduling for past dates
+
+ P037 Show friendly UI messages for invalid inputs
+
+ P038 Ensure tasks remain user-isolated
