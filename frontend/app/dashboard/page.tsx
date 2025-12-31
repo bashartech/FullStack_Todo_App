@@ -1,384 +1,4 @@
-// 'use client';
 
-// import { useState, useEffect } from 'react';
-// import { api, Task } from '@/lib/api';
-// import { useRouter } from 'next/navigation';
-// import TaskItem from '@/components/task/TaskItem';
-// import Logout from '@/components/logout';
-// import LoadingSpinner from '@/components/LoadingSpinner';
-
-// export default function DashboardPage() {
-//   const [tasks, setTasks] = useState<Task[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [newTaskTitle, setNewTaskTitle] = useState('');
-//   const [newTaskDescription, setNewTaskDescription] = useState('');
-//   const [newTaskPriority, setNewTaskPriority] = useState<'low' | 'medium' | 'high'>('medium');
-//   const [newTaskTags, setNewTaskTags] = useState('');
-//   const [newTaskDueDate, setNewTaskDueDate] = useState('');
-//   const [error, setError] = useState<string | null>(null);
-//   const [success, setSuccess] = useState<string | null>(null);
-//   const [filterCompleted, setFilterCompleted] = useState<'all' | 'pending' | 'completed'>('all');
-//   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [sortField, setSortField] = useState<'created_at' | 'due_date' | 'priority' | 'title'>('created_at');
-//   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-//   const [isCreatingTask, setIsCreatingTask] = useState(false);
-//   const router = useRouter();
-
-//   // Fetch tasks with filters, search, and sorting on component mount and when filters change
-//   useEffect(() => {
-//     fetchTasks();
-//   }, [filterCompleted, filterPriority, searchQuery, sortField, sortOrder]);
-
-//   const fetchTasks = async () => {
-//     try {
-//       setLoading(true);
-//       const tasksData = await api.tasks.getTasks(
-//         filterCompleted !== 'all' ? filterCompleted : undefined,
-//         filterPriority !== 'all' ? filterPriority : undefined,
-//         searchQuery || undefined,
-//         sortField,
-//         sortOrder
-//       );
-//       setTasks(tasksData);
-//       setError(null);
-//     } catch (err) {
-//       setError('Failed to load tasks. Please try again.');
-//       console.error('Error fetching tasks:', err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleCreateTask = async (e: React.FormEvent) => {
-//     e.preventDefault();
-
-//     if (!newTaskTitle.trim()) {
-//       setError('Task title is required');
-//       return;
-//     }
-
-//     try {
-//       setIsCreatingTask(true);
-//       setError(null);
-
-//       // Parse tags from comma-separated string
-//       const tagsArray = newTaskTags
-//         ? newTaskTags.split(',').map(tag => tag.trim()).filter(tag => tag)
-//         : [];
-
-//       const newTask = await api.tasks.createTask({
-//         title: newTaskTitle,
-//         description: newTaskDescription,
-//         completed: false,
-//         priority: newTaskPriority,
-//         tags: tagsArray,
-//         due_date: newTaskDueDate || undefined,
-//       });
-
-//       setTasks([newTask, ...tasks]);
-//       // Reset form fields
-//       setNewTaskTitle('');
-//       setNewTaskDescription('');
-//       setNewTaskPriority('medium');
-//       setNewTaskTags('');
-//       setNewTaskDueDate('');
-//       setSuccess('Task created successfully!');
-
-//       // Clear success message after 3 seconds
-//       setTimeout(() => setSuccess(null), 3000);
-//     } catch (err) {
-//       setError('Failed to create task. Please try again.');
-//       console.error('Error creating task:', err);
-//     } finally {
-//       setIsCreatingTask(false);
-//     }
-//   };
-
-//   const handleUpdateTask = (updatedTask: Task) => {
-//     setTasks(tasks.map(task =>
-//       task.id === updatedTask.id ? updatedTask : task
-//     ));
-//   };
-
-//   const handleDeleteTask = async (taskId: number) => {
-//     if (!window.confirm('Are you sure you want to delete this task?')) {
-//       return;
-//     }
-
-//     try {
-//       setError(null);
-//       await api.tasks.deleteTask(taskId);
-//       setTasks(tasks.filter(task => task.id !== taskId));
-//       setSuccess('Task deleted successfully!');
-
-//       // Clear success message after 3 seconds
-//       setTimeout(() => setSuccess(null), 3000);
-//     } catch (err) {
-//       setError('Failed to delete task. Please try again.');
-//       console.error('Error deleting task:', err);
-//     }
-//   };
-
-//   const handleToggleTaskCompletion = async (taskId: number) => {
-//     try {
-//       setError(null);
-//       const updatedTask = await api.tasks.toggleTaskCompletion(taskId);
-
-//       setTasks(tasks.map(task =>
-//         task.id === taskId ? updatedTask : task
-//       ));
-//     } catch (err) {
-//       setError('Failed to update task. Please try again.');
-//       console.error('Error updating task:', err);
-//     }
-//   };
-
-//   const handleSignOut = async () => {
-//     try {
-//       await Logout();
-//       router.push('/');
-//     } catch (err) {
-//       setError('Failed to sign out. Please try again.');
-//       console.error('Error signing out:', err);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-animated bg-noise">
-//       {/* Animated background elements */}
-//       <div className="absolute inset-0 overflow-hidden">
-//         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-//         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-//       </div>
-
-//       <div className="relative max-w-6xl mx-auto px-4 py-8">
-//         <div className="flex justify-between items-center mb-8">
-//           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-//             My Tasks
-//           </h1>
-//           <div className="flex items-center space-x-4">
-//             <button
-//               onClick={handleSignOut}
-//               className="btn-outline px-4 py-2 text-sm"
-//             >
-//               Sign Out
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Success/Error Messages */}
-//         {error && (
-//           <div className="mb-4 p-4 bg-red-500/20 border border-red-500/30 text-red-300 rounded-lg backdrop-blur-sm">
-//             {error}
-//           </div>
-//         )}
-//         {success && (
-//           <div className="mb-4 p-4 bg-green-500/20 border border-green-500/30 text-green-300 rounded-lg backdrop-blur-sm">
-//             {success}
-//           </div>
-//         )}
-
-//         {/* Search and Filter Controls */}
-//         <div className="card-glass mb-6">
-//           <h2 className="text-lg font-semibold text-white mb-4">Search & Filter</h2>
-//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-//             <div>
-//               <label htmlFor="search" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Search
-//               </label>
-//               <input
-//                 type="text"
-//                 id="search"
-//                 value={searchQuery}
-//                 onChange={(e) => setSearchQuery(e.target.value)}
-//                 className="input-glass w-full px-3 py-2"
-//                 placeholder="Search tasks..."
-//               />
-//             </div>
-//             <div>
-//               <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Status
-//               </label>
-//               <select
-//                 id="status"
-//                 value={filterCompleted}
-//                 onChange={(e) => setFilterCompleted(e.target.value as 'all' | 'pending' | 'completed')}
-//                 className="input-glass w-full px-3 py-2"
-//               >
-//                 <option value="all">All</option>
-//                 <option value="pending">Pending</option>
-//                 <option value="completed">Completed</option>
-//               </select>
-//             </div>
-//             <div>
-//               <label htmlFor="priority" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Priority
-//               </label>
-//               <select
-//                 id="priority"
-//                 value={filterPriority}
-//                 onChange={(e) => setFilterPriority(e.target.value as 'all' | 'low' | 'medium' | 'high')}
-//                 className="input-glass w-full px-3 py-2"
-//               >
-//                 <option value="all">All Priorities</option>
-//                 <option value="low">Low</option>
-//                 <option value="medium">Medium</option>
-//                 <option value="high">High</option>
-//               </select>
-//             </div>
-//             <div>
-//               <label htmlFor="sort" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Sort By
-//               </label>
-//               <div className="flex space-x-2">
-//                 <select
-//                   id="sort"
-//                   value={sortField}
-//                   onChange={(e) => setSortField(e.target.value as 'created_at' | 'due_date' | 'priority' | 'title')}
-//                   className="input-glass w-full px-3 py-2"
-//                 >
-//                   <option value="created_at">Created Date</option>
-//                   <option value="due_date">Due Date</option>
-//                   <option value="priority">Priority</option>
-//                   <option value="title">Title</option>
-//                 </select>
-//                 <select
-//                   value={sortOrder}
-//                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-//                   className="input-glass w-20 px-3 py-2"
-//                 >
-//                   <option value="desc">Desc</option>
-//                   <option value="asc">Asc</option>
-//                 </select>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Task Creation Form */}
-//         <div className="card-glass mb-8">
-//           <h2 className="text-xl font-semibold text-white mb-4">Create New Task</h2>
-//           <form onSubmit={handleCreateTask}>
-//             <div className="mb-4">
-//               <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Title *
-//               </label>
-//               <input
-//                 type="text"
-//                 id="title"
-//                 value={newTaskTitle}
-//                 onChange={(e) => setNewTaskTitle(e.target.value)}
-//                 className="input-glass w-full px-3 py-2 text-white"
-//                 placeholder="What needs to be done?"
-//                 required
-//               />
-//             </div>
-//             <div className="mb-4">
-//               <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
-//                 Description
-//               </label>
-//               <textarea
-//                 id="description"
-//                 value={newTaskDescription}
-//                 onChange={(e) => setNewTaskDescription(e.target.value)}
-//                 className="input-glass w-full px-3 py-2 text-white"
-//                 placeholder="Add details (optional)"
-//                 rows={3}
-//               />
-//             </div>
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-//               <div>
-//                 <label htmlFor="priority" className="block text-sm font-medium text-gray-300 mb-1">
-//                   Priority
-//                 </label>
-//                 <select
-//                   id="priority"
-//                   value={newTaskPriority}
-//                   onChange={(e) => setNewTaskPriority(e.target.value as 'low' | 'medium' | 'high')}
-//                   className="input-glass w-full px-3 py-2 text-white"
-//                 >
-//                   <option value="low">Low</option>
-//                   <option value="medium">Medium</option>
-//                   <option value="high">High</option>
-//                 </select>
-//               </div>
-//               <div>
-//                 <label htmlFor="dueDate" className="block text-sm font-medium text-gray-300 mb-1">
-//                   Due Date
-//                 </label>
-//                 <input
-//                   type="date"
-//                   id="dueDate"
-//                   value={newTaskDueDate}
-//                   onChange={(e) => setNewTaskDueDate(e.target.value)}
-//                   className="input-glass w-full px-3 py-2 text-white"
-//                 />
-//               </div>
-//               <div>
-//                 <label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-1">
-//                   Tags
-//                 </label>
-//                 <input
-//                   type="text"
-//                   id="tags"
-//                   value={newTaskTags}
-//                   onChange={(e) => setNewTaskTags(e.target.value)}
-//                   className="input-glass w-full px-3 py-2 text-white"
-//                   placeholder="Tag1, Tag2, Tag3"
-//                 />
-//               </div>
-//             </div>
-//             <button
-//               type="submit"
-//               disabled={isCreatingTask}
-//               className="btn-primary w-full flex items-center justify-center"
-//             >
-//               {isCreatingTask ? (
-//                 <>
-//                   <span className="spinner-white mr-2"></span>
-//                   Creating...
-//                 </>
-//               ) : (
-//                 'Create Task'
-//               )}
-//             </button>
-//           </form>
-//         </div>
-
-//         {/* Tasks List */}
-//         <div className="card-glass">
-//           <div className="px-6 py-4 border-b border-gray-700/50">
-//             <h2 className="text-xl font-semibold text-white">Your Tasks</h2>
-//           </div>
-
-//           {loading ? (
-//             <div className="p-12 text-center">
-//               <LoadingSpinner />
-//               <p className="mt-4 text-gray-400">Loading tasks...</p>
-//             </div>
-//           ) : tasks.length === 0 ? (
-//             <div className="p-12 text-center">
-//               <p className="text-gray-400">No tasks yet. Create your first task above!</p>
-//             </div>
-//           ) : (
-//             <ul className="divide-y divide-gray-700/50">
-//               {tasks.map((task) => (
-//                 <TaskItem
-//                   key={task.id}
-//                   task={task}
-//                   onUpdate={handleUpdateTask}
-//                   onDelete={handleDeleteTask}
-//                   onToggleCompletion={handleToggleTaskCompletion}
-//                 />
-//               ))}
-//             </ul>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 "use client"
 
 import type React from "react"
@@ -387,6 +7,7 @@ import { useState, useEffect } from "react"
 import { api, type Task } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import TaskItem from "@/components/task/TaskItem"
+import TaskReminder from "@/components/task/TaskReminder"
 import Logout from "@/components/logout"
 import LoadingSpinner from "@/components/LoadingSpinner"
 
@@ -398,6 +19,10 @@ export default function DashboardPage() {
   const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium")
   const [newTaskTags, setNewTaskTags] = useState("")
   const [newTaskDueDate, setNewTaskDueDate] = useState("")
+  const [newTaskIsRecurring, setNewTaskIsRecurring] = useState(false)
+  const [newTaskRecurrenceType, setNewTaskRecurrenceType] = useState<"daily" | "weekly" | "monthly">("weekly")
+  const [newTaskRecurrenceInterval, setNewTaskRecurrenceInterval] = useState(1)
+  const [newTaskReminderAt, setNewTaskReminderAt] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [filterCompleted, setFilterCompleted] = useState<"all" | "pending" | "completed">("all")
@@ -413,6 +38,7 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchTasks()
   }, [filterCompleted, filterPriority, searchQuery, sortField, sortOrder])
+
 
   const fetchTasks = async () => {
     try {
@@ -460,6 +86,10 @@ export default function DashboardPage() {
         priority: newTaskPriority,
         tags: tagsArray,
         due_date: newTaskDueDate || undefined,
+        is_recurring: newTaskIsRecurring,
+        recurrence_type: newTaskIsRecurring ? newTaskRecurrenceType : undefined,
+        recurrence_interval: newTaskIsRecurring ? newTaskRecurrenceInterval : 1,
+        reminder_at: newTaskReminderAt || undefined,
       })
 
       setTasks([newTask, ...tasks])
@@ -468,6 +98,10 @@ export default function DashboardPage() {
       setNewTaskPriority("medium")
       setNewTaskTags("")
       setNewTaskDueDate("")
+      setNewTaskIsRecurring(false)
+      setNewTaskRecurrenceType("weekly")
+      setNewTaskRecurrenceInterval(1)
+      setNewTaskReminderAt("")
       setSuccess("Task created successfully!")
 
       setTimeout(() => setSuccess(null), 3000)
@@ -794,7 +428,7 @@ export default function DashboardPage() {
                 <select
                   value={newTaskPriority}
                   onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
-                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -822,6 +456,63 @@ export default function DashboardPage() {
                   placeholder="work, urgent, bug"
                 />
               </div>
+            </div>
+
+            {/* Recurring Task Section */}
+            <div className="pt-4 border-t border-neutral-800/50">
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="isRecurring"
+                  checked={newTaskIsRecurring}
+                  onChange={(e) => setNewTaskIsRecurring(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 bg-neutral-800/50 border-neutral-700 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="isRecurring" className="ml-2 text-sm font-semibold text-gray-300">
+                  Make this a recurring task
+                </label>
+              </div>
+
+              {newTaskIsRecurring && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Recurrence Type</label>
+                    <select
+                      value={newTaskRecurrenceType}
+                      onChange={(e) => setNewTaskRecurrenceType(e.target.value as "daily" | "weekly" | "monthly")}
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 cursor-pointer"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Interval</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newTaskRecurrenceInterval}
+                      onChange={(e) => setNewTaskRecurrenceInterval(parseInt(e.target.value) || 1)}
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                      placeholder="1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Reminder Section */}
+            <div className="pt-4 border-t border-neutral-800/50">
+              <label className="block text-sm font-semibold text-gray-300 mb-2">Set Reminder</label>
+              <input
+                type="datetime-local"
+                value={newTaskReminderAt}
+                onChange={(e) => setNewTaskReminderAt(e.target.value)}
+                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                placeholder="Select reminder time"
+              />
             </div>
 
             <button
@@ -916,6 +607,9 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Task Reminder Component - Handles browser notifications for task reminders */}
+      <TaskReminder tasks={tasks} />
     </div>
   )
 }

@@ -23,11 +23,21 @@ class Task(TaskBase, table=True):
     priority: str = Field(default="medium", max_length=20)  # low, medium, high
     tags: str = Field(default="[]", max_length=1000)  # JSON string for tags array
     due_date: Optional[datetime] = Field(default=None)  # Optional due date
+    is_recurring: bool = Field(default=False)  # Whether task repeats
+    recurrence_type: Optional[str] = Field(default=None, max_length=20)  # daily, weekly, monthly
+    recurrence_interval: int = Field(default=1)  # Interval for recurrence
+    next_run_at: Optional[datetime] = Field(default=None)  # Next occurrence date
+    reminder_at: Optional[datetime] = Field(default=None)  # Time to trigger reminder
 
 class TaskCreate(TaskBase):
     priority: PriorityEnum = Field(default=PriorityEnum.medium)  # low, medium, high
     tags: Optional[List[str]] = []  # Array of tags
     due_date: Optional[datetime] = None  # Optional due date
+    is_recurring: bool = False  # Whether task repeats
+    recurrence_type: Optional[str] = None  # daily, weekly, monthly
+    recurrence_interval: int = 1  # Interval for recurrence
+    next_run_at: Optional[datetime] = None  # Next occurrence date
+    reminder_at: Optional[datetime] = None  # Time to trigger reminder
 
 class TaskRead(TaskBase):
     id: int
@@ -38,6 +48,11 @@ class TaskRead(TaskBase):
     priority: PriorityEnum
     tags: List[str]
     due_date: Optional[datetime]
+    is_recurring: bool
+    recurrence_type: Optional[str]
+    recurrence_interval: int
+    next_run_at: Optional[datetime]
+    reminder_at: Optional[datetime]
 
 class TaskUpdate(SQLModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
@@ -47,3 +62,8 @@ class TaskUpdate(SQLModel):
     priority: Optional[PriorityEnum] = Field(default=None)  # low, medium, high
     tags: Optional[List[str]] = None  # Array of tags
     due_date: Optional[datetime] = None  # Optional due date
+    is_recurring: Optional[bool] = None  # Whether task repeats
+    recurrence_type: Optional[str] = None  # daily, weekly, monthly
+    recurrence_interval: Optional[int] = None  # Interval for recurrence
+    next_run_at: Optional[datetime] = None  # Next occurrence date
+    reminder_at: Optional[datetime] = None  # Time to trigger reminder

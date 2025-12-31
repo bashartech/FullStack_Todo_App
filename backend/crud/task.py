@@ -30,7 +30,12 @@ def create_task(session: Session, task: TaskCreate, user_id: str) -> TaskRead:
         user_id=user_id,
         priority=priority_str,
         tags=tags_json,
-        due_date=task.due_date
+        due_date=task.due_date,
+        is_recurring=task.is_recurring,
+        recurrence_type=task.recurrence_type,
+        recurrence_interval=task.recurrence_interval,
+        next_run_at=task.next_run_at,
+        reminder_at=task.reminder_at
     )
 
     session.add(db_task)
@@ -154,7 +159,12 @@ def convert_task_to_read(task: Task) -> TaskRead:
             updated_at=task.updated_at,
             priority=task.priority,
             tags=tags_list,
-            due_date=task.due_date
+            due_date=task.due_date,
+            is_recurring=task.is_recurring,
+            recurrence_type=task.recurrence_type,
+            recurrence_interval=task.recurrence_interval,
+            next_run_at=task.next_run_at,
+            reminder_at=task.reminder_at
         )
     return None
 
@@ -214,6 +224,16 @@ def update_task(
         db_task.tags = json.dumps(task_update.tags) if task_update.tags is not None else "[]"
     if task_update.due_date is not None:
         db_task.due_date = task_update.due_date
+    if task_update.is_recurring is not None:
+        db_task.is_recurring = task_update.is_recurring
+    if task_update.recurrence_type is not None:
+        db_task.recurrence_type = task_update.recurrence_type
+    if task_update.recurrence_interval is not None:
+        db_task.recurrence_interval = task_update.recurrence_interval
+    if task_update.next_run_at is not None:
+        db_task.next_run_at = task_update.next_run_at
+    if task_update.reminder_at is not None:
+        db_task.reminder_at = task_update.reminder_at
 
     session.add(db_task)
     session.commit()
@@ -221,6 +241,9 @@ def update_task(
 
     return convert_task_to_read(db_task)
 
+
+from datetime import datetime, timedelta
+import calendar
 
 def toggle_task_completion(session: Session, task_id: int, user_id: str) -> Optional[TaskRead]:
     """
@@ -239,14 +262,82 @@ def toggle_task_completion(session: Session, task_id: int, user_id: str) -> Opti
     if not db_task or db_task.user_id != user_id:
         return None
 
+    # Store the original completion status to determine if it's being completed now
+    was_completed = db_task.completed
     # Toggle the completion status
     db_task.completed = not db_task.completed
+
+    # If the task is being marked as completed and it's a recurring task, create the next occurrence
+    if not was_completed and db_task.completed and db_task.is_recurring:
+        # Calculate next due date based on recurrence pattern
+        next_due_date = calculate_next_occurrence(db_task.due_date, db_task.recurrence_type, db_task.recurrence_interval)
+
+        # Create a new task with the same properties but for the next occurrence
+        new_task = Task(
+            title=db_task.title,
+            description=db_task.description,
+            completed=False,  # New task starts as incomplete
+            user_id=db_task.user_id,
+            priority=db_task.priority,
+            tags=db_task.tags,
+            due_date=next_due_date,
+            is_recurring=db_task.is_recurring,
+            recurrence_type=db_task.recurrence_type,
+            recurrence_interval=db_task.recurrence_interval,
+            next_run_at=next_due_date,
+            reminder_at=db_task.reminder_at  # Keep the same reminder pattern
+        )
+
+        session.add(new_task)
+        # No need to commit here as we'll commit after updating the original task
 
     session.add(db_task)
     session.commit()
     session.refresh(db_task)
 
     return convert_task_to_read(db_task)
+
+
+def calculate_next_occurrence(current_date, recurrence_type, recurrence_interval):
+    """
+    Calculate the next occurrence date based on recurrence pattern.
+
+    Args:
+        current_date: The current due date
+        recurrence_type: 'daily', 'weekly', or 'monthly'
+        recurrence_interval: The interval (e.g., every 2 weeks)
+
+    Returns:
+        datetime: The next occurrence date
+    """
+    if not current_date:
+        # If no current date, use today
+        current_date = datetime.utcnow()
+
+    if recurrence_type == "daily":
+        return current_date + timedelta(days=recurrence_interval)
+    elif recurrence_type == "weekly":
+        return current_date + timedelta(weeks=recurrence_interval)
+    elif recurrence_type == "monthly":
+        # For monthly recurrence, add the appropriate number of months
+        # This handles month-end dates properly
+        current_year = current_date.year
+        current_month = current_date.month
+        current_day = current_date.day
+
+        # Calculate target month and year
+        target_month = current_month + recurrence_interval
+        target_year = current_year + (target_month - 1) // 12
+        target_month = ((target_month - 1) % 12) + 1
+
+        # Handle month-end dates (e.g., Jan 31 -> Feb 28/29)
+        max_day_in_target_month = calendar.monthrange(target_year, target_month)[1]
+        target_day = min(current_day, max_day_in_target_month)
+
+        return current_date.replace(year=target_year, month=target_month, day=target_day)
+    else:
+        # Default to daily if invalid recurrence type
+        return current_date + timedelta(days=recurrence_interval)
 
 
 def delete_task(session: Session, task_id: int, user_id: str) -> bool:

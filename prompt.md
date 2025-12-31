@@ -1,36 +1,193 @@
-INFO:     127.0.0.1:57449 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:57448 - "GET / HTTP/1.1" 200 OK
-DEBUG: Attempting to verify Better Auth JWT - token present: True
-DEBUG: Token algorithm detected: EdDSA
-DEBUG: Algorithm EdDSA is asymmetric, skipping secret-based verification
-DEBUG: Attempting to fetch JWKS from: http://localhost:3000/api/auth/jwks
-DEBUG: JWKS response status: 200
-DEBUG: JWKS response headers: {'vary': 'rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch', 'content-type': 'application/json', 'Date': 'Mon, 29 Dec 2025 04:32:11 GMT', 'Connection': 'keep-alive', 'Keep-Alive': 'timeout=5', 'Transfer-Encoding': 'chunked'}
-DEBUG: JWKS response keys: ['keys']
-DEBUG: JWKS keys count: 1
-DEBUG: JWKS key 0: OKP EdDSA unknown
-DEBUG: Successfully verified Ed25519 JWT for user: uLFkoj0d6b8NECZeSJcPcCzIoiN5fQOu
-2025-12-29 09:32:17,551 INFO sqlalchemy.engine.Engine select pg_catalog.version()
-2025-12-29 09:32:17,557 INFO sqlalchemy.engine.Engine [raw sql] {}
-2025-12-29 09:32:18,434 INFO sqlalchemy.engine.Engine select current_schema()
-2025-12-29 09:32:18,435 INFO sqlalchemy.engine.Engine [raw sql] {}
-2025-12-29 09:32:18,836 INFO sqlalchemy.engine.Engine show standard_conforming_strings
-2025-12-29 09:32:18,857 INFO sqlalchemy.engine.Engine [raw sql] {}
-2025-12-29 09:32:19,306 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2025-12-29 09:32:19,427 INFO sqlalchemy.engine.Engine SELECT task.title, task.description, task.completed, task.id, task.user_id, task.created_at, task.updated_at, task.priority, task.tags, task.due_date
-FROM task
-WHERE task.user_id = %(user_id_1)s ORDER BY task.created_at DESC
-2025-12-29 09:32:19,532 INFO sqlalchemy.engine.Engine [generated in 0.00135s] {'user_id_1': 'uLFkoj0d6b8NECZeSJcPcCzIoiN5fQOu'}
-2025-12-29 09:32:19,977 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:57464 - "GET /api/tasks?sort=created_at&order=desc HTTP/1.1" 500 Internal Server Error
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "D:\TODO_APP\skills\TODO_FULLSTACK_WEB_APPLICATION\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi      
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\AAA\AppData\Roaming\uv\python\cpython-3.11.13-windows-x86_64-none\Lib\json\decoder.py", line 353, in raw_decode
-    obj, end = self.scan_once(s, idx)
-               ^^^^^^^^^^^^^^^^^^^^^^
-json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+# Plan: Advanced Intelligent Task Features (Due Dates, Recurring Tasks, Reminders)
+
+**Feature ID**: 004-advanced-intelligent-tasks  
+**Branch**: `feature/intelligent-tasks`  
+**Input Spec**: `/specs/004-advanced-intelligent-tasks/spec.md`  
+**Project State**:  
+- Authentication (Better Auth + JWT) → ✅ Working  
+- Backend (FastAPI + Neon + SQLModel) → ✅ Connected  
+- Tasks CRUD → ⚠️ Exists but extended here  
+- No new services or infra required  
+
+---
+
+## Objective
+
+Extend the existing task system with:
+1. Due Dates
+2. Recurring Tasks
+3. Browser-based Time Reminders
+
+This plan **verifies, extends, and corrects** the current workflow without recreating existing logic.
+
+---
+
+## Non-Goals (Strict)
+
+- ❌ No new authentication logic
+- ❌ No backend schedulers / cron jobs
+- ❌ No email or push notifications
+- ❌ No new databases or adapters
+
+---
+
+## Phase 0: Pre-Check (MANDATORY)
+
+> Claude MUST verify these before proceeding
+
+- [ ] Confirm `models/task.py` already exists
+- [ ] Confirm tasks table exists in Neon DB
+- [ ] Confirm JWT auth middleware is already enforced
+- [ ] Confirm CRUD endpoints already work without these features
+
+If any of the above fail → STOP and report.
+
+---
+
+## Phase 1: Data Model Extension (Blocking)
+
+### Goal
+Extend the existing Task model with new intelligent fields.
+
+### Tasks
+
+- [ ] P001 Open `backend/models/task.py`
+- [ ] P002 Add the following fields **without removing existing ones**:
+
+  ```python
+  due_date: Optional[datetime]
+  is_recurring: bool = False
+  recurrence_type: Optional[str]  # daily | weekly | monthly
+  recurrence_interval: int = 1
+  next_run_at: Optional[datetime]
+  reminder_at: Optional[datetime]
+ P003 Ensure all new fields are nullable and backward-compatible
+
+ P004 Update SQLModel metadata only (no table rename)
+
+Phase 2: Database Migration (Blocking)
+Goal
+Apply schema changes safely to Neon PostgreSQL.
+
+Tasks
+ P005 Generate migration using the existing Neon + SQLModel workflow
+
+ P006 Review migration to ensure:
+
+No table drops
+
+Only column additions
+
+ P007 Apply migration to Neon DB
+
+ P008 Verify new columns exist using a SELECT query
+
+Phase 3: Backend Logic — Due Dates
+Goal
+Enable due date storage and usage.
+
+Tasks
+ P009 Update task create endpoint to accept due_date
+
+ P010 Update task update endpoint to allow modifying due_date
+
+ P011 Ensure due_date is validated as datetime
+
+ P012 Ensure overdue logic is NOT enforced server-side (UI only)
+
+Phase 4: Backend Logic — Recurring Tasks (Core Intelligence)
+Goal
+Auto-generate next task instance on completion.
+
+Tasks
+ P013 Update task completion logic (existing endpoint)
+
+ P014 On completion:
+
+Check is_recurring == true
+
+Calculate next due date based on recurrence_type
+
+ P015 Create new task with:
+
+Same title & description
+
+New due_date
+
+Same recurrence rules
+
+is_completed = false
+
+ P016 Ensure:
+
+Only ONE new task is created
+
+Completed task remains unchanged
+
+Phase 5: Frontend — Due Date UI
+Goal
+Allow users to set and view due dates.
+
+Tasks
+ P017 Add date picker to task form
+
+ P018 Display due date in task list
+
+ P019 Highlight overdue tasks visually
+
+ P020 Ensure due date sorting works visually (no backend sort yet)
+
+Phase 6: Frontend — Recurring UI
+Goal
+Allow users to configure recurrence.
+
+Tasks
+ P021 Add recurrence toggle to task form
+
+ P022 Add recurrence type dropdown
+
+ P023 Disable recurrence inputs when toggle is off
+
+ P024 Display recurrence badge on task cards
+
+Phase 7: Frontend — Time Reminders (Browser Only)
+Goal
+Trigger reminders using browser notifications.
+
+Tasks
+ P025 Add reminder time picker
+
+ P026 Request Notification permission once
+
+ P027 On task load:
+
+Schedule reminders using setTimeout
+
+ P028 Ensure reminder fires only once
+
+ P029 Do NOT persist reminder timers in backend
+
+Phase 8: Integration Verification
+Goal
+Ensure everything works together.
+
+Tasks
+ P030 Create task with due date → verify storage
+
+ P031 Complete recurring task → verify next task created
+
+ P032 Reload page → reminders still work
+
+ P033 Verify no duplicate recurring tasks
+
+ P034 Verify no JWT or CRUD regression
+
+Phase 9: UX & Edge Case Handling
+Tasks
+ P035 Handle timezone safely (use ISO timestamps)
+
+ P036 Prevent reminder scheduling for past dates
+
+ P037 Show friendly UI messages for invalid inputs
+
+ P038 Ensure tasks remain user-isolated
