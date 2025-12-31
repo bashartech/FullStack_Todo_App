@@ -1,0 +1,40 @@
+import { betterAuth } from "better-auth";
+import { jwt } from "better-auth/plugins";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import {schema} from "../db/schema"
+import { nextCookies } from "better-auth/next-js";
+import { db } from "../db/drizzle"; // your drizzle instance
+// Configure Better Auth with JWT token issuance
+export const auth = betterAuth({
+
+  socialProviders: {
+        google: { 
+            clientId: process.env.GOOGLE_CLIENT_ID as string, 
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
+        }, 
+    },
+
+  emailAndPassword: {
+    enabled: true,
+    // requireEmailVerification: false, // Set to true in production
+  },
+  // account: {
+  //   accountLinking: {
+  //     enabled: true,
+  //   }
+  // },
+  database: drizzleAdapter(db, {
+        provider: "pg", 
+        schema
+    }),
+  secret: process.env.BETTER_AUTH_SECRET || "fallback_secret_key_change_in_production",
+  plugins: [
+    jwt({
+      enabled: true,
+      issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    }),
+    nextCookies() // Enable JWT token issuance
+  ],
+});
+
