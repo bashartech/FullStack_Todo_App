@@ -31,9 +31,10 @@ export const auth = betterAuth({
   plugins: [
     jwt({
       enabled: true,
-      issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+      // issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+      issuer: process.env.BETTER_AUTH_URL!,
       maxAge: 7 * 24 * 60 * 60, // 7 days
-    } as any),
+    }as any),
     nextCookies() // Enable JWT token issuance
   ],
 });
