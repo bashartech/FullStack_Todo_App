@@ -41,7 +41,7 @@
 
 
 import { betterAuth } from "better-auth"
-import { jwt } from "better-auth/plugins"
+import { jwt, JwtOptions } from "better-auth/plugins"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
 import { db } from "../db/drizzle"
@@ -86,7 +86,7 @@ export function getAuth() {
         enabled: true,
         issuer: baseURL,
         maxAge: 7 * 24 * 60 * 60,
-      } as any), // runtime-only usage
+      } as unknown as JwtOptions), // runtime-only usage
       nextCookies(),
     ],
   })
