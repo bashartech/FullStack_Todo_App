@@ -26,7 +26,7 @@ export const auth = betterAuth({
     }),
   secret: process.env.BETTER_AUTH_SECRET || "fallback_secret_key_change_in_production",
   plugins: [
-    jwt({} as any),
+    jwt({}),
     nextCookies() // Enable JWT token issuance
   ],
 });
