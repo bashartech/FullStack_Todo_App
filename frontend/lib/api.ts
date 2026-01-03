@@ -2,7 +2,7 @@
 import { authClient } from "./auth-client";
 
 // Get the base URL from environment variable or default to development URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://bashartc14-todo-backend.hf.space/api' || "http://localhost:8000/api";
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

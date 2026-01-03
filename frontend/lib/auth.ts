@@ -24,7 +24,7 @@ export const auth = betterAuth({
         provider: "pg", 
         schema
     }),
-  secret: process.env.BETTER_AUTH_SECRET || "fallback_secret_key_change_in_production",
+  secret: process.env.NEXT_PUBLIC_BETTER_AUTH_SECRET || "fallback_secret_key_change_in_production",
   plugins: [
     jwt({}),
     nextCookies() // Enable JWT token issuance
