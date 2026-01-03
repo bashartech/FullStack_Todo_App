@@ -9,10 +9,10 @@
 // export const { GET, POST } = toNextJsHandler(auth);
 
 import { toNextJsHandler } from "better-auth/next-js"
-import { getAuth } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 
 export const runtime = "nodejs" // 🔥 REQUIRED ON VERCEL
 
-const auth = getAuth()
+// const auth = getAuth()
 
 export const { GET, POST } = toNextJsHandler(auth)
