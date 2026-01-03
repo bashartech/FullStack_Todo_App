@@ -26,12 +26,7 @@ export const auth = betterAuth({
     }),
   secret: process.env.BETTER_AUTH_SECRET || "fallback_secret_key_change_in_production",
   plugins: [
-    jwt({
-      enabled: true,
-      // issuer: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-      issuer: process.env.BETTER_AUTH_URL!,
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    }as any),
+    jwt({} as any),
     nextCookies() // Enable JWT token issuance
   ],
 });
