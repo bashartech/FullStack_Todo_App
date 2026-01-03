@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Task } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface TaskReminderProps {
   tasks: Task[];
@@ -11,18 +12,6 @@ export default function TaskReminder({ tasks }: TaskReminderProps) {
   const scheduledRemindersRef = useRef<Record<number, number>>({});
 
   useEffect(() => {
-    // Check for notification permission on initial load
-    const requestNotificationPermission = async () => {
-      if ('Notification' in window) {
-        if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission();
-          console.log('Notification permission:', permission);
-        }
-      }
-    };
-
-    requestNotificationPermission();
-
     // Clear any previously scheduled reminders
     Object.values(scheduledRemindersRef.current).forEach(timeoutId => {
       clearTimeout(timeoutId);
@@ -72,36 +61,20 @@ export default function TaskReminder({ tasks }: TaskReminderProps) {
   }, [tasks]);
 
   const showNotification = (task: Task) => {
-    console.log('Attempting to show notification for task:', task.title);
+    console.log('Attempting to show toast notification for task:', task.title);
 
-    if ('Notification' in window && Notification.permission === 'granted') {
-      try {
-        const notification = new Notification(`Task Reminder: ${task.title}`, {
-          body: task.description || 'Time to work on this task!',
-          icon: '/favicon.ico', // Use your app's icon
-          tag: `task-reminder-${task.id}`
-        });
-
-        // Close the notification after 10 seconds
-        setTimeout(() => {
-          if (notification) {
-            notification.close();
-          }
-        }, 10000);
-
-        // Open the dashboard when notification is clicked
-        notification.onclick = () => {
-          window.focus();
-          notification.close();
-        };
-      } catch (error) {
-        console.error('Error showing notification:', error);
-      }
-    } else {
-      // Fallback: Show an in-app notification if browser notifications are not permitted
-      console.log(`Reminder for task: ${task.title} - ${task.description || 'Time to work on this task!'}`);
-      // You could also use a toast notification library here
-    }
+    // Use sonner toast notification instead of browser notification
+    toast.info(`⏰ Task Reminder: ${task.title}`, {
+      description: task.description || 'Time to work on this task!',
+      duration: 8000, // Show for 8 seconds
+      action: {
+        label: 'View Dashboard',
+        onClick: () => {
+          // Navigate to dashboard or focus the window
+          window.location.href = '/dashboard';
+        },
+      },
+    });
   };
 
   return null; // This component doesn't render anything visible

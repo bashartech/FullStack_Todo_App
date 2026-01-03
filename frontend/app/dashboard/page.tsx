@@ -568,7 +568,7 @@ export default function DashboardPage() {
 
           {loading ? (
             <div className="p-12 text-center">
-              <LoadingSpinner />
+              <LoadingSpinner message="Loading your tasks..." />
               <p className="mt-4 text-gray-400">Loading your tasks...</p>
             </div>
           ) : tasks.length === 0 ? (
