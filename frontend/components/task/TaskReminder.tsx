@@ -15,7 +15,8 @@ export default function TaskReminder({ tasks }: TaskReminderProps) {
     const requestNotificationPermission = async () => {
       if ('Notification' in window) {
         if (Notification.permission === 'default') {
-          await Notification.requestPermission();
+          const permission = await Notification.requestPermission();
+          console.log('Notification permission:', permission);
         }
       }
     };
@@ -31,20 +32,32 @@ export default function TaskReminder({ tasks }: TaskReminderProps) {
     // Schedule reminders for tasks that have reminder_at set
     tasks.forEach(task => {
       if (task.reminder_at && !task.completed) {
-        const reminderTime = new Date(task.reminder_at).getTime();
-        const currentTime = Date.now();
-        const timeUntilReminder = reminderTime - currentTime;
+        try {
+          // Parse the reminder time - handle ISO string properly
+          const reminderDate = new Date(task.reminder_at);
+          const reminderTime = reminderDate.getTime();
+          const currentTime = Date.now();
+          const timeUntilReminder = reminderTime - currentTime;
 
-        // Only schedule if the reminder is in the future
-        if (timeUntilReminder > 0) {
-          const timeoutId = window.setTimeout(() => {
-            showNotification(task);
-            // Remove the timeout ID from our reference after execution
-            delete scheduledRemindersRef.current[task.id];
-          }, timeUntilReminder);
+          console.log(`Task ${task.id}: reminder set for ${reminderDate}, current time: ${new Date()}, time until: ${timeUntilReminder}ms`);
 
-          // Store the timeout ID so we can clear it later if needed
-          scheduledRemindersRef.current[task.id] = timeoutId;
+          // Only schedule if the reminder is in the future (positive time difference)
+          if (timeUntilReminder > 0) {
+            const timeoutId = window.setTimeout(() => {
+              console.log(`Executing reminder for task: ${task.title}`);
+              showNotification(task);
+              // Remove the timeout ID from our reference after execution
+              delete scheduledRemindersRef.current[task.id];
+            }, timeUntilReminder);
+
+            // Store the timeout ID so we can clear it later if needed
+            scheduledRemindersRef.current[task.id] = timeoutId;
+          } else if (timeUntilReminder < 0) {
+            // The reminder time has already passed, potentially show notification immediately or skip
+            console.log(`Reminder for task ${task.id} was scheduled in the past: ${Math.abs(timeUntilReminder)}ms ago`);
+          }
+        } catch (error) {
+          console.error('Error parsing reminder date for task:', task.id, error);
         }
       }
     });
@@ -59,26 +72,35 @@ export default function TaskReminder({ tasks }: TaskReminderProps) {
   }, [tasks]);
 
   const showNotification = (task: Task) => {
+    console.log('Attempting to show notification for task:', task.title);
+
     if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification(`Task Reminder: ${task.title}`, {
-        body: task.description || 'Time to work on this task!',
-        icon: '/favicon.ico', // Use your app's icon
-        tag: `task-reminder-${task.id}`
-      });
+      try {
+        const notification = new Notification(`Task Reminder: ${task.title}`, {
+          body: task.description || 'Time to work on this task!',
+          icon: '/favicon.ico', // Use your app's icon
+          tag: `task-reminder-${task.id}`
+        });
 
-      // Close the notification after 10 seconds
-      setTimeout(() => {
-        notification.close();
-      }, 10000);
+        // Close the notification after 10 seconds
+        setTimeout(() => {
+          if (notification) {
+            notification.close();
+          }
+        }, 10000);
 
-      // Open the dashboard when notification is clicked
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
+        // Open the dashboard when notification is clicked
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+      } catch (error) {
+        console.error('Error showing notification:', error);
+      }
     } else {
       // Fallback: Show an in-app notification if browser notifications are not permitted
       console.log(`Reminder for task: ${task.title} - ${task.description || 'Time to work on this task!'}`);
+      // You could also use a toast notification library here
     }
   };
 

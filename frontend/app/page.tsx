@@ -38,7 +38,7 @@ export default function Home() {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                TaskFlow
+                TaskStudio
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function Home() {
           <div className="text-center p-12 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 border border-blue-500/20 rounded-2xl">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Transform Your Productivity?</h2>
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of teams already using TaskFlow to stay organized and productive.
+              Join thousands of teams already using TaskStudio to stay organized and productive.
             </p>
             <Link
               href="/signup"
@@ -219,7 +219,7 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <span className="font-semibold text-white">TaskFlow</span>
+                <span className="font-semibold text-white">TaskStudio</span>
               </div>
               <div className="flex items-center gap-8 text-gray-400 text-sm">
                 <a href="#" className="hover:text-white transition-colors">
@@ -234,7 +234,7 @@ export default function Home() {
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-neutral-800 text-center text-gray-500 text-sm">
-              © 2025 TaskFlow. All rights reserved.
+              © 2025 TaskStudio. All rights reserved.
             </div>
           </div>
         </footer>
@@ -242,3 +242,519 @@ export default function Home() {
     </div>
   )
 }
+
+
+
+
+
+
+// "use client"
+
+// import Link from "next/link"
+// import { useRef, useState } from "react"
+// import { motion, useScroll, useTransform, useInView } from "framer-motion"
+
+// // --- Elite Animation Components ---
+
+// const HeroLineNetwork = () => (
+//   <div className="absolute inset-0 overflow-hidden pointer-events-none">
+//     {/* Background Vertical Stems */}
+//     <div className="absolute inset-0 flex justify-around opacity-20">
+//       {[...Array(8)].map((_, i) => (
+//         <div key={i} className="w-[1px] h-full bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+//       ))}
+//     </div>
+
+//     {/* Horizontal Scanning Beams */}
+//     {[...Array(4)].map((_, i) => (
+//       <motion.div
+//         key={i}
+//         initial={{ y: "-10%", opacity: 0 }}
+//         animate={{ y: "110%", opacity: [0, 0.4, 0] }}
+//         transition={{
+//           duration: 10 + i * 4,
+//           repeat: Number.POSITIVE_INFINITY,
+//           ease: "easeInOut",
+//           delay: i * 3,
+//         }}
+//         className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"
+//         style={{ left: 0 }}
+//       />
+//     ))}
+
+//     {/* Focal Point Glow */}
+//     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/[0.02] rounded-full blur-[120px]" />
+//   </div>
+// )
+
+// const SectionHeader = ({ title, subtitle, badge }: { title: string; subtitle?: string; badge?: string }) => {
+//   const ref = useRef(null)
+//   const isInView = useInView(ref, { once: true })
+
+//   return (
+//     <div ref={ref} className="mb-24">
+//       {badge && (
+//         <motion.div
+//           initial={{ opacity: 0, y: 10 }}
+//           animate={isInView ? { opacity: 1, y: 0 } : {}}
+//           className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 mb-6"
+//         >
+//           <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
+//           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400">{badge}</span>
+//         </motion.div>
+//       )}
+//       <motion.h2
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={isInView ? { opacity: 1, y: 0 } : {}}
+//         transition={{ delay: 0.1 }}
+//         className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[1.1]"
+//       >
+//         {title}
+//       </motion.h2>
+//       {subtitle && (
+//         <motion.p
+//           initial={{ opacity: 0, y: 20 }}
+//           animate={isInView ? { opacity: 1, y: 0 } : {}}
+//           transition={{ delay: 0.2 }}
+//           className="text-neutral-500 max-w-xl text-lg font-medium leading-relaxed"
+//         >
+//           {subtitle}
+//         </motion.p>
+//       )}
+//     </div>
+//   )
+// }
+
+// // --- Section Components ---
+
+// const FeatureCard = ({ title, description, icon: Icon, index }: any) => {
+//   const [isHovered, setIsHovered] = useState(false)
+//   const ref = useRef(null)
+//   const isInView = useInView(ref, { once: true })
+
+//   return (
+//     <motion.div
+//       ref={ref}
+//       initial={{ opacity: 0, y: 30 }}
+//       animate={isInView ? { opacity: 1, y: 0 } : {}}
+//       transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+//       onMouseEnter={() => setIsHovered(true)}
+//       onMouseLeave={() => setIsHovered(false)}
+//       className="relative p-10 bg-neutral-950/50 border border-white/[0.05] rounded-3xl overflow-hidden group hover:border-white/20 transition-all duration-700 backdrop-blur-3xl"
+//     >
+//       {/* Dynamic Background Animation: Pulse glow */}
+//       <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-white/[0.02] blur-[80px] group-hover:bg-white/[0.05] transition-all duration-700" />
+
+//       {/* Technical Corner Detail */}
+//       <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-white/10 group-hover:border-white/40 transition-colors" />
+
+//       <div className="relative z-10">
+//         <div className="mb-10 w-12 h-12 bg-white flex items-center justify-center rounded-2xl text-black shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:scale-110 transition-transform duration-500">
+//           <Icon size={24} />
+//         </div>
+//         <h3 className="text-2xl font-black text-white mb-4 tracking-tight">{title}</h3>
+//         <p className="text-neutral-500 leading-relaxed text-base font-medium transition-colors group-hover:text-neutral-300">
+//           {description}
+//         </p>
+//       </div>
+//     </motion.div>
+//   )
+// }
+
+// const StatItem = ({ number, label }: any) => {
+//   const { scrollYProgress } = useScroll()
+//   const opacity = useTransform(scrollYProgress, [0.3, 0.45], [0, 1])
+//   const y = useTransform(scrollYProgress, [0.3, 0.45], [50, 0])
+
+//   return (
+//     <motion.div style={{ opacity, y }} className="relative group">
+//       <div className="text-5xl md:text-8xl font-black text-white mb-4 tracking-tighter tabular-nums leading-none">
+//         {number}
+//       </div>
+//       <div className="h-[1px] w-12 bg-white/20 mb-4 group-hover:w-24 transition-all duration-500" />
+//       <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500 group-hover:text-white transition-colors">
+//         {label}
+//       </div>
+//     </motion.div>
+//   )
+// }
+
+// export default function Home() {
+//   const containerRef = useRef(null)
+
+//   return (
+//     <div
+//       ref={containerRef}
+//       className="min-h-screen bg-black text-white selection:bg-white selection:text-black font-sans antialiased overflow-x-hidden"
+//     >
+//       {/* Elite Navigation */}
+//       <nav className="fixed top-0 w-full z-[100] border-b border-white/[0.05] bg-black/40 backdrop-blur-2xl">
+//         <div className="max-w-[1400px] mx-auto px-8 h-20 flex items-center justify-between">
+//           <div className="flex items-center gap-3 group cursor-pointer">
+//             <div className="relative w-10 h-10 flex items-center justify-center">
+//               <div className="absolute inset-0 bg-white rounded-xl rotate-45 group-hover:rotate-90 transition-transform duration-700" />
+//               <div className="relative z-10 w-5 h-5 bg-black rounded-sm rotate-45" />
+//             </div>
+//             <span className="text-xl font-black tracking-tighter uppercase leading-none">TaskStudio</span>
+//           </div>
+
+//           <div className="hidden lg:flex items-center gap-12">
+//             {["System", "Network", "Pricing", "Docs"].map((item) => (
+//               <Link
+//                 key={item}
+//                 href="#"
+//                 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors relative group py-2"
+//               >
+//                 {item}
+//                 <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white transition-all duration-500 group-hover:w-full" />
+//               </Link>
+//             ))}
+//           </div>
+
+//           <div className="flex items-center gap-8">
+//             <Link
+//               href="#"
+//               className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-white transition-colors"
+//             >
+//               Access Code
+//             </Link>
+//             <Link
+//               href="#"
+//               className="px-8 py-3 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+//             >
+//               Initialize
+//             </Link>
+//           </div>
+//         </div>
+//       </nav>
+
+//       <main className="relative z-10">
+//         {/* Hero Section: The Pinnacle of Design */}
+//         <section className="relative min-h-screen flex flex-col justify-center px-8 overflow-hidden">
+//           <HeroLineNetwork />
+
+//           {/* Elite Perspective Grid: Deeper and more masked */}
+//           <div className="absolute inset-0 z-0 pointer-events-none">
+//             <div
+//               className="absolute bottom-0 w-[200%] left-[-50%] h-[70%] opacity-[0.12]"
+//               style={{
+//                 backgroundImage: `linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)`,
+//                 backgroundSize: "100px 100px",
+//                 maskImage: "radial-gradient(ellipse at bottom, black, transparent 70%)",
+//                 transform: "perspective(1200px) rotateX(75deg)",
+//                 transformOrigin: "bottom",
+//               }}
+//             />
+//           </div>
+
+//           <div className="relative z-10 max-w-7xl mx-auto w-full">
+//             <div className="max-w-4xl">
+//               <motion.div
+//                 initial={{ opacity: 0, x: -20 }}
+//                 animate={{ opacity: 1, x: 0 }}
+//                 className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-12"
+//               >
+//                 <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+//                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400">
+//                   Global Distributed Orchestration
+//                 </span>
+//               </motion.div>
+
+//               <motion.h1
+//                 initial={{ opacity: 0, y: 40 }}
+//                 animate={{ opacity: 1, y: 0 }}
+//                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+//                 className="text-[clamp(3.5rem,10vw,8rem)] font-black tracking-tighter leading-[0.85] mb-12"
+//               >
+//                 THE <span className="text-neutral-700">KERNEL</span> OF <br />
+//                 HIGH PERFORMANCE.
+//               </motion.h1>
+
+//               <motion.p
+//                 initial={{ opacity: 0, y: 20 }}
+//                 animate={{ opacity: 1, y: 0 }}
+//                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+//                 className="max-w-2xl text-xl md:text-2xl text-neutral-500 mb-16 font-medium leading-relaxed"
+//               >
+//                 Orchestrate your entire engineering workflow with precision. Built for the next generation of
+//                 world-class infrastructure.
+//               </motion.p>
+
+//               <motion.div
+//                 initial={{ opacity: 0, y: 20 }}
+//                 animate={{ opacity: 1, y: 0 }}
+//                 transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+//                 className="flex flex-col sm:flex-row gap-6"
+//               >
+//                 <button className="group relative px-12 py-6 bg-white text-black rounded-2xl font-black text-lg overflow-hidden transition-all hover:scale-[1.02]">
+//                   <span className="relative z-10">Start Deployment</span>
+//                   <div className="absolute inset-0 bg-neutral-200 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+//                 </button>
+//                 <button className="px-12 py-6 bg-neutral-950 border border-white/10 rounded-2xl font-black text-lg hover:bg-neutral-900 transition-all backdrop-blur-xl">
+//                   Documentation
+//                 </button>
+//               </motion.div>
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Features Section: Modular Precision */}
+//         <section className="py-40 px-8 relative bg-black">
+//           {/* Subtle Side Glows */}
+//           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-white/[0.015] blur-[100px] rounded-full -translate-x-1/2" />
+//           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-white/[0.015] blur-[100px] rounded-full translate-x-1/2" />
+
+//           <div className="max-w-[1400px] mx-auto relative z-10">
+//             <SectionHeader
+//               badge="Architecture"
+//               title="Built for the Absolute."
+//               subtitle="Precision-engineered components designed to handle extreme scale without compromise."
+//             />
+
+//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+//               {[
+//                 {
+//                   title: "Neural Routing",
+//                   desc: "Intelligent packet distribution based on real-time latency metrics.",
+//                   icon: () => <div className="w-5 h-5 bg-black border-2 border-current rounded-sm rotate-45" />,
+//                 },
+//                 {
+//                   title: "Quantum Sync",
+//                   desc: "Distributed state management with zero-conflict consistency.",
+//                   icon: () => <div className="w-5 h-5 rounded-full border-2 border-current" />,
+//                 },
+//                 {
+//                   title: "Vault Protocol",
+//                   desc: "Military-grade encryption and automated compliance auditing.",
+//                   icon: () => <div className="w-5 h-5 border-2 border-current rounded-md" />,
+//                 },
+//                 {
+//                   title: "Deep Observability",
+//                   desc: "End-to-end tracing for every single event across your stack.",
+//                   icon: () => (
+//                     <div className="flex gap-1 items-end h-5">
+//                       <div className="w-1.5 h-full bg-current opacity-40" />
+//                       <div className="w-1.5 h-[60%] bg-current" />
+//                       <div className="w-1.5 h-[80%] bg-current opacity-70" />
+//                     </div>
+//                   ),
+//                 },
+//                 {
+//                   title: "Universal SDK",
+//                   desc: "One implementation for mobile, web, and server-side runtimes.",
+//                   icon: () => <span className="font-black text-sm">SDK</span>,
+//                 },
+//                 {
+//                   title: "Predictive AI",
+//                   desc: "Automated scaling and issue detection before they occur.",
+//                   icon: () => <div className="w-5 h-5 bg-current rounded-full animate-pulse opacity-40" />,
+//                 },
+//               ].map((f, i) => (
+//                 <FeatureCard key={i} title={f.title} description={f.desc} icon={f.icon} index={i} />
+//               ))}
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* Statistics: The Proof of Scale */}
+//         <section className="py-56 px-8 relative overflow-hidden border-y border-white/[0.05]">
+//           {/* Unique Background: Slow floating lines */}
+//           <div className="absolute inset-0 pointer-events-none">
+//             {[...Array(15)].map((_, i) => (
+//               <motion.div
+//                 key={i}
+//                 animate={{
+//                   x: [0, 100, 0],
+//                   y: [0, -50, 0],
+//                   opacity: [0.05, 0.1, 0.05],
+//                 }}
+//                 transition={{
+//                   duration: 15 + i * 2,
+//                   repeat: Number.POSITIVE_INFINITY,
+//                   ease: "linear",
+//                 }}
+//                 className="absolute w-[1px] h-32 bg-white"
+//                 style={{ top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%` }}
+//               />
+//             ))}
+//           </div>
+
+//           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-24 relative z-10">
+//             <StatItem number="128" label="Data Centers" />
+//             <StatItem number="0.1ms" label="Latency Floor" />
+//             <StatItem number="99.99" label="Availability" />
+//             <StatItem number="420TB" label="Daily Traffic" />
+//           </div>
+//         </section>
+
+//         {/* Implementation: The Visual Narrative */}
+//         <section className="py-48 px-8 overflow-hidden">
+//           <div className="max-w-[1400px] mx-auto">
+//             <div className="flex flex-col lg:flex-row gap-32 items-center">
+//               <div className="flex-1">
+//                 <SectionHeader badge="Integration" title="Zero Friction Deployment." />
+
+//                 <div className="space-y-16">
+//                   {[
+//                     { title: "Initialize Core", desc: "One-line configuration to link your existing infrastructure." },
+//                     { title: "Define Schema", desc: "Flexible, type-safe structures that evolve with your product." },
+//                     { title: "Push to Edge", desc: "Automated global distribution with instant propagation." },
+//                   ].map((item, idx) => (
+//                     <motion.div
+//                       key={idx}
+//                       initial={{ opacity: 0, x: -30 }}
+//                       whileInView={{ opacity: 1, x: 0 }}
+//                       viewport={{ once: true }}
+//                       transition={{ delay: idx * 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+//                       className="group relative pl-12 border-l border-white/10 hover:border-white/40 transition-colors"
+//                     >
+//                       <div className="absolute left-[-5px] top-0 w-[9px] h-[9px] bg-black border border-white/20 rounded-full group-hover:bg-white group-hover:border-white transition-all" />
+//                       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-neutral-500 group-hover:text-white transition-colors mb-4">
+//                         {item.title}
+//                       </h3>
+//                       <p className="text-xl font-medium text-neutral-400 group-hover:text-neutral-300 transition-colors max-w-sm">
+//                         {item.desc}
+//                       </p>
+//                     </motion.div>
+//                   ))}
+//                 </div>
+//               </div>
+
+//               {/* Unique Section Graphic: The Monolith */}
+//               <div className="flex-1 w-full relative group">
+//                 <div className="relative aspect-square bg-neutral-950 rounded-[4rem] border border-white/[0.07] overflow-hidden flex items-center justify-center shadow-[0_0_100px_rgba(255,255,255,0.02)] transition-transform duration-700 group-hover:scale-[1.02]">
+//                   {/* Internal grid system */}
+//                   <div
+//                     className="absolute inset-0 opacity-[0.05]"
+//                     style={{
+//                       backgroundImage:
+//                         "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+//                       backgroundSize: "40px 40px",
+//                     }}
+//                   />
+
+//                   {/* Floating Central Element */}
+//                   <motion.div
+//                     animate={{ y: [0, -20, 0] }}
+//                     transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+//                     className="relative z-10 w-48 h-48 flex items-center justify-center"
+//                   >
+//                     <div className="absolute inset-0 bg-white/5 blur-[60px] rounded-full animate-pulse" />
+//                     <div className="w-32 h-32 bg-white rounded-[2rem] rotate-45 flex items-center justify-center shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+//                       <div className="w-12 h-12 bg-black rounded-lg rotate-45" />
+//                     </div>
+//                   </motion.div>
+
+//                   {/* Orbiting Particles */}
+//                   {[...Array(12)].map((_, i) => (
+//                     <motion.div
+//                       key={i}
+//                       animate={{
+//                         rotate: 360,
+//                       }}
+//                       transition={{
+//                         duration: 20 + i * 5,
+//                         repeat: Number.POSITIVE_INFINITY,
+//                         ease: "linear",
+//                       }}
+//                       className="absolute w-full h-full"
+//                     >
+//                       <div
+//                         className="absolute top-0 left-1/2 w-[1px] h-full bg-white/10"
+//                         style={{ transform: `rotate(${i * 30}deg)` }}
+//                       />
+//                     </motion.div>
+//                   ))}
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* CTA: Final Impact */}
+//         <section className="py-48 px-8">
+//           <motion.div
+//             initial={{ opacity: 0, scale: 0.98 }}
+//             whileInView={{ opacity: 1, scale: 1 }}
+//             viewport={{ once: true }}
+//             className="max-w-6xl mx-auto rounded-[5rem] bg-white text-black p-20 md:p-32 relative overflow-hidden text-center group"
+//           >
+//             {/* Minimal Background Lines for CTA */}
+//             <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+//               {[...Array(20)].map((_, i) => (
+//                 <div key={i} className="absolute w-full h-[1px] bg-black" style={{ top: `${i * 5}%` }} />
+//               ))}
+//             </div>
+
+//             <h2 className="text-[clamp(3rem,10vw,7rem)] font-black tracking-tighter leading-[0.85] mb-12">
+//               REDEFINE YOUR <br />
+//               NETWORK.
+//             </h2>
+//             <p className="text-xl md:text-2xl font-medium mb-16 max-w-xl mx-auto opacity-60">
+//               Stop settling for legacy limits. Join the tier of developers building at the absolute limit.
+//             </p>
+//             <div className="flex flex-col sm:flex-row justify-center gap-6">
+//               <button className="px-16 py-7 bg-black text-white rounded-3xl font-black text-xl hover:scale-105 transition-transform shadow-2xl">
+//                 Get Private Access
+//               </button>
+//               <button className="px-16 py-7 border-2 border-black rounded-3xl font-black text-xl hover:bg-black/5 transition-colors">
+//                 Contact Sales
+//               </button>
+//             </div>
+//           </motion.div>
+//         </section>
+//       </main>
+
+//       <footer className="py-32 px-8 border-t border-white/[0.05] relative overflow-hidden">
+//         <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 relative z-10">
+//           <div className="space-y-8">
+//             <div className="flex items-center gap-3">
+//               <div className="w-8 h-8 bg-white rounded-lg rotate-45" />
+//               <span className="font-black tracking-tighter uppercase text-xl">TaskStudio</span>
+//             </div>
+//             <p className="text-neutral-500 font-medium text-sm leading-relaxed max-w-xs">
+//               Defining the next generation of professional workflow orchestration. Sub-millisecond latency for
+//               world-class teams.
+//             </p>
+//           </div>
+
+//           {[
+//             { title: "Platform", links: ["Features", "System", "Orchestration", "Security"] },
+//             { title: "Company", links: ["About", "Enterprise", "Network", "Terms"] },
+//             { title: "Resources", links: ["Docs", "API", "Status", "Contact"] },
+//           ].map((col, idx) => (
+//             <div key={idx} className="space-y-8">
+//               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white">{col.title}</h4>
+//               <ul className="space-y-4">
+//                 {col.links.map((link) => (
+//                   <li key={link}>
+//                     <Link href="#" className="text-sm font-medium text-neutral-500 hover:text-white transition-colors">
+//                       {link}
+//                     </Link>
+//                   </li>
+//                 ))}
+//               </ul>
+//             </div>
+//           ))}
+//         </div>
+
+//         <div className="max-w-[1400px] mx-auto mt-32 pt-12 border-t border-white/[0.05] flex flex-col md:flex-row justify-between gap-8 items-center">
+//           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-700">
+//             © 2026 PROTOCOL SYSTEMS INC. ALL RIGHTS RESERVED.
+//           </div>
+//           <div className="flex gap-12">
+//             {["Twitter", "GitHub", "Discord"].map((social) => (
+//               <Link
+//                 key={social}
+//                 href="#"
+//                 className="text-[10px] font-black uppercase tracking-[0.4em] text-neutral-500 hover:text-white transition-colors"
+//               >
+//                 {social}
+//               </Link>
+//             ))}
+//           </div>
+//         </div>
+//       </footer>
+//     </div>
+//   )
+// }
