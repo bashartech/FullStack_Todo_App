@@ -577,7 +577,7 @@ export default function Home() {
                       <Link href="#implementation" className="text-sm font-medium text-neutral-500 hover:text-white transition-colors">
                         How It Works
                       </Link>
-                      <Link href="/dashboard" className="text-sm font-medium text-neutral-500 hover:text-white transition-colors">
+                      <Link href="/signup" className="text-sm font-medium text-neutral-500 hover:text-white transition-colors">
                         Dashboard
                       </Link>
                     </li>
