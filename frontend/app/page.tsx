@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRef, useState } from "react"
-import { motion, useScroll, useTransform, useInView } from "framer-motion"
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion"
 
 /* -----------------------------------------------------
    ELITE BACKGROUND + ANIMATION COMPONENTS
@@ -148,6 +148,8 @@ const StatItem = ({ number, label }: any) => {
 ----------------------------------------------------- */
 
 export default function Home() {
+    const [open, setOpen] = useState(false)
+
   const containerRef = useRef(null)
 
   return (
@@ -156,63 +158,126 @@ export default function Home() {
       className="min-h-screen bg-black text-white selection:bg-white selection:text-black font-sans antialiased overflow-x-hidden"
     >
       {/* ---------------- HEADER / NAV ---------------- */}
-      <nav className="fixed top-0 w-full z-[100] border-b border-white/[0.05] bg-black/40 backdrop-blur-2xl">
-        <div className="max-w-[1400px] mx-auto px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative w-10 h-10 flex items-center justify-center">
-              <div className="absolute inset-0 bg-white rounded-xl rotate-45 group-hover:rotate-90 transition-transform duration-700" />
-              <div className="relative z-10 w-5 h-5 bg-black rounded-sm rotate-45" />
-            </div>
-            <span className="text-xl font-black tracking-tighter uppercase">
-              TaskStudio
-            </span>
+       <nav className="fixed top-0 w-full z-[100] border-b border-white/[0.05] bg-black/40 backdrop-blur-2xl">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 h-20 flex items-center justify-between">
+        {/* LOGO */}
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="relative w-10 h-10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-white rounded-xl rotate-45 group-hover:rotate-90 transition-transform duration-700" />
+            <div className="relative z-10 w-5 h-5 bg-black rounded-sm rotate-45" />
           </div>
-
-          <div className="hidden lg:flex items-center gap-12">
-            {/* {["Features", "Stats", "How It Works"].map((item) => ( */}
-              <Link
-                
-                href="#features"
-                className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors relative group py-2"
-              >
-                Feature
-                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-500" />
-              </Link>
-              <Link
-                
-                href="#implementation"
-                className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors relative group py-2"
-              >
-                How It Works
-                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-500" />
-              </Link>
-              <Link
-                
-                href="#stats"
-                className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors relative group py-2"
-              >
-                Stats
-                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-500" />
-              </Link>
-            {/* ))} */}
-          </div>
-
-          <div className="flex items-center gap-8">
-            <Link
-              href="/login"
-              className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-white transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="px-8 py-3 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 active:scale-95 transition-all"
-            >
-              Get Started
-            </Link>
-          </div>
+          <span className="text-xl font-black tracking-tighter uppercase">
+            TaskStudio
+          </span>
         </div>
-      </nav>
+
+        {/* DESKTOP LINKS */}
+        <div className="hidden lg:flex items-center gap-12">
+          {[
+            { label: "Feature", href: "#features" },
+            { label: "How It Works", href: "#implementation" },
+            { label: "Stats", href: "#stats" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+             href={item.href as any}
+              className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 hover:text-white transition-colors relative group py-2"
+            >
+              {item.label}
+              <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-white group-hover:w-full transition-all duration-500" />
+            </Link>
+          ))}
+        </div>
+
+        {/* DESKTOP CTA */}
+        <div className="hidden lg:flex items-center gap-8">
+          <Link
+            href="/login"
+            className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-white transition-colors"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/signup"
+            className="px-8 py-3 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 active:scale-95 transition-all"
+          >
+            Get Started
+          </Link>
+        </div>
+
+        {/* MOBILE TOGGLE */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="lg:hidden relative z-[110] w-10 h-10 flex items-center justify-center"
+        >
+          <span className="sr-only">Toggle menu</span>
+          <div className="space-y-1.5">
+            <span
+              className={`block h-[2px] w-6 bg-white transition-transform ${
+                open ? "rotate-45 translate-y-2" : ""
+              }`}
+            />
+            <span
+              className={`block h-[2px] w-6 bg-white transition-opacity ${
+                open ? "opacity-0" : ""
+              }`}
+            />
+            <span
+              className={`block h-[2px] w-6 bg-white transition-transform ${
+                open ? "-rotate-45 -translate-y-2" : ""
+              }`}
+            />
+          </div>
+        </button>
+      </div>
+
+      {/* MOBILE MENU */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:hidden overflow-hidden border-t border-white/[0.05] bg-black/80 backdrop-blur-2xl"
+          >
+            <div className="px-6 py-8 flex flex-col gap-6">
+              {[
+                { label: "Feature", href: "#features" },
+                { label: "How It Works", href: "#implementation" },
+                { label: "Stats", href: "#stats" },
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href as any}
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-black uppercase tracking-[0.25em] text-neutral-400 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              <div className="pt-6 border-t border-white/[0.05] flex flex-col gap-4">
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-black uppercase tracking-[0.25em] text-neutral-400 hover:text-white transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setOpen(false)}
+                  className="px-8 py-4 bg-white text-black text-sm font-black uppercase tracking-[0.25em] rounded-full text-center"
+                >
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
 
       <main className="relative z-10">
         {/* ---------------- HERO ---------------- */}
